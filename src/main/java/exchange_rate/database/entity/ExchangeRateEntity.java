@@ -65,4 +65,11 @@ public class ExchangeRateEntity implements Serializable {
 	public void setCurrencyAlphabeticalCode(String currencyAlphabeticalCode) {
 		this.currencyAlphabeticalCode = currencyAlphabeticalCode;
 	}
+
+	@Override
+	public String toString() {
+		return "ExchangeRateEntity [id=" + id + ", rate=" + rate + ", date=" + date + ", currencyAlphabeticalCode="
+				+ currencyAlphabeticalCode + "]";
+	}
+
 }
