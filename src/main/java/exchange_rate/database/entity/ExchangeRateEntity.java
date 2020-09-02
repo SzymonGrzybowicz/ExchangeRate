@@ -9,7 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-@Entity
+@Entity(name = "ExchangeRate")
 public class ExchangeRateEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -25,7 +25,7 @@ public class ExchangeRateEntity implements Serializable {
 	@Column(name = "date")
 	private Date date;
 
-	@Column(name = "currencyAlphabeticalCode")
+	@Column(name = "currency_alphabetical_code")
 	private String currencyAlphabeticalCode;
 
 	public ExchangeRateEntity() {

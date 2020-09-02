@@ -1,5 +1,7 @@
 package exchange_rate.database;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 
@@ -19,13 +21,17 @@ public class ExchangeRateRepository {
 
 	public long save(ExchangeRateEntity entity) {
 		log.info("Save(" + entity + ")");
+		session.beginTransaction();
 		session.save(entity);
+		session.getTransaction().commit();
 		return entity.getId();
 	}
 
 	public void delete(ExchangeRateEntity entity) {
 		log.info("Delete(" + entity + ")");
+		session.beginTransaction();
 		session.delete(entity);
+		session.getTransaction().commit();
 	}
 
 	public ExchangeRateEntity read(Long id) {
@@ -35,7 +41,17 @@ public class ExchangeRateRepository {
 
 	public long update(ExchangeRateEntity entity) {
 		log.info("Update(" + entity + ")");
+		session.beginTransaction();
 		session.update(entity);
+		session.getTransaction().commit();
 		return entity.getId();
+	}
+
+	public List<ExchangeRateEntity> getAllRecords() {
+		log.info("GetAllRecords()");
+		session.beginTransaction();
+		List<ExchangeRateEntity> result = session.createQuery("from ExchangeRate", ExchangeRateEntity.class).list();
+		session.getTransaction().commit();
+		return result;
 	}
 }

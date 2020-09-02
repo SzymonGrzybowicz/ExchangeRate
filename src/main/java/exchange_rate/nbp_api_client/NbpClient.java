@@ -23,7 +23,7 @@ public class NbpClient {
 	public Single<Double> requestExchangeRate(Currency currency) {
 		HttpUrl url = new HttpUrl.Builder().scheme("http").host("api.nbp.pl").addPathSegment("api")
 				.addPathSegment("exchangerates").addPathSegment("rates").addPathSegment("A") // table A
-				.addPathSegment(currency.alphabeticCode).build();
+				.addPathSegment(currency.getAlphabeticCode()).build();
 
 		Request request = new Request.Builder().url(url).build();
 
@@ -35,6 +35,7 @@ public class NbpClient {
 					Gson gson = new Gson();
 					CurrencyExchangeRateResponse value = gson.fromJson(response.body().string(),
 							CurrencyExchangeRateResponse.class);
+
 					emitter.onSuccess(value.getRates()[0].getMid());
 				}
 
