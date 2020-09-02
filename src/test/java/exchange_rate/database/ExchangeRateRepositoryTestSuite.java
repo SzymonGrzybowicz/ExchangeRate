@@ -31,6 +31,8 @@ public class ExchangeRateRepositoryTestSuite {
 		Assert.assertEquals(2.14, entity.getRate(), 0.1);
 		Assert.assertEquals("STH", entity.getCurrencyAlphabeticalCode());
 		Assert.assertEquals(1234, entity.getDate().getTime());
+
+		repository.delete(entity);
 	}
 
 	@Test
@@ -63,5 +65,6 @@ public class ExchangeRateRepositoryTestSuite {
 		Assert.assertEquals(1234, entity.getDate().getTime());
 		Assert.assertEquals("TEST", entity.getCurrencyAlphabeticalCode());
 
+		repository.delete(entity);
 	}
 }
