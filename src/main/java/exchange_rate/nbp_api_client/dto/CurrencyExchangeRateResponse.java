@@ -1,4 +1,4 @@
-package dto;
+package exchange_rate.nbp_api_client.dto;
 
 public class CurrencyExchangeRateResponse {
 	private String table;

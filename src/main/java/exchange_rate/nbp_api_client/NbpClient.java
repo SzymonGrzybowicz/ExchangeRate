@@ -1,4 +1,4 @@
-package nbp_web_api_client;
+package exchange_rate.nbp_api_client;
 
 import java.io.IOException;
 
@@ -9,7 +9,7 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
-import dto.CurrencyExchangeRateResponse;
+import exchange_rate.nbp_api_client.dto.CurrencyExchangeRateResponse;
 import io.reactivex.rxjava3.core.Single;
 
 public class NbpClient {

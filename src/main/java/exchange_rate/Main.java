@@ -1,9 +1,9 @@
-package exchangeRate;
+package exchange_rate;
 
 import com.squareup.okhttp.OkHttpClient;
 
-import nbp_web_api_client.Currency;
-import nbp_web_api_client.NbpClient;
+import exchange_rate.nbp_api_client.Currency;
+import exchange_rate.nbp_api_client.NbpClient;
 
 public class Main {
 

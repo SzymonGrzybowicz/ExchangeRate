@@ -1,4 +1,4 @@
-package nbp_web_api_client;
+package exchange_rate.nbp_api_client;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -23,6 +23,9 @@ import com.squareup.okhttp.Protocol;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
+
+import exchange_rate.nbp_api_client.Currency;
+import exchange_rate.nbp_api_client.NbpClient;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NbpClientTestSuite {
