@@ -47,11 +47,10 @@ public class Application {
 			break;
 		case 8:
 			Calendar calendar = Calendar.getInstance();
-			calendar.set(2019, 8, 1);
+			calendar.set(2019, 9, 1);
 			Date start = calendar.getTime();
-			nbpClient.getMinimumExchangeRateInPeroid(Currency.EURO, start, new Date()).subscribe(v -> {
-				System.out.println("Najni¿szy kurs Euro: " + v);
-			});
+			nbpClient.getMinimumExchangeRateInPeroid(Currency.EURO, start, new Date())
+					.subscribe(v -> System.out.println("Najni¿szy kurs Euro: " + v), e -> e.printStackTrace());
 			break;
 		case 9:
 			showAllDatabaseRecords();
