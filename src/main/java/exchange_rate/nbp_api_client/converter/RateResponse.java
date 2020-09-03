@@ -1,11 +1,11 @@
-package exchange_rate.nbp_api_client.dto;
+package exchange_rate.nbp_api_client.converter;
 
-public class CurrencyExchangeRateResponse {
+public class RateResponse {
 	private String table;
 	private String currency;
 	private String code;
 	private Rate[] rates;
-	
+
 	public String getTable() {
 		return table;
 	}
@@ -22,21 +22,20 @@ public class CurrencyExchangeRateResponse {
 		return rates;
 	}
 
-	public CurrencyExchangeRateResponse(String table, String currency, String code) {
+	public RateResponse(String table, String currency, String code) {
 		super();
 		this.table = table;
 		this.currency = currency;
 		this.code = code;
 	}
 
-	
 	public class Rate {
-		
+
 		private String no;
 		private String effectiveDate;
-		private double mid;
-		
-		public Rate(String no, String effectiveDate, double mid) {
+		private String mid;
+
+		public Rate(String no, String effectiveDate, String mid) {
 			super();
 			this.no = no;
 			this.effectiveDate = effectiveDate;
@@ -51,7 +50,7 @@ public class CurrencyExchangeRateResponse {
 			return effectiveDate;
 		}
 
-		public double getMid() {
+		public String getMid() {
 			return mid;
 		}
 	}

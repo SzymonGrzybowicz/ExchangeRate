@@ -14,4 +14,14 @@ public enum Currency {
 		return alphabeticCode;
 	}
 
+	public static Currency byAlphabeticCode(String alphabeticCode) {
+		for (int i = 0; i < values().length; i++) {
+			Currency value = values()[i];
+			if (value.alphabeticCode.equals(alphabeticCode)) {
+				return value;
+			}
+		}
+		return null;
+	}
+
 }

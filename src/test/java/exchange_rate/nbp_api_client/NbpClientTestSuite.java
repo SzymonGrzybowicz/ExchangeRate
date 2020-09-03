@@ -46,7 +46,7 @@ public class NbpClientTestSuite {
 
 		NbpClient nbpClient = new NbpClient(okHttpClient);
 
-		nbpClient.requestExchangeRate(Currency.AMERICAN_DOLAR).subscribe(v -> Assert.assertEquals((Double) 4.3946, v),
+		nbpClient.requestActualExchangeRate(Currency.AMERICAN_DOLAR).subscribe(v -> Assert.assertEquals((Double) 4.3946, v),
 				e -> Assert.assertTrue(false));
 
 		Mockito.verify(remoteCall).enqueue(captor.capture());
@@ -69,7 +69,7 @@ public class NbpClientTestSuite {
 
 		NbpClient nbpClient = new NbpClient(okHttpClient);
 
-		nbpClient.requestExchangeRate(Currency.AMERICAN_DOLAR).subscribe(v -> Assert.assertTrue(false),
+		nbpClient.requestActualExchangeRate(Currency.AMERICAN_DOLAR).subscribe(v -> Assert.assertTrue(false),
 				e -> Assert.assertTrue(e instanceof TestException));
 
 		Mockito.verify(remoteCall).enqueue(captor.capture());
