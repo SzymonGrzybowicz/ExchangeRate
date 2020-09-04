@@ -7,10 +7,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import exchange_rate.nbp_api_client.Currency;
+import exchange_rate.nbp_api_client.downloader.DownloaderResponse;
 import exchange_rate.nbp_api_client.dto.ExchangeRate;
 import exchange_rate.nbp_api_client.exception.NbpWebApiException;
 import exchange_rate.nbp_api_client.validator.Validator;
-import exchange_rate.web_client.WebResponse;
 
 public class HttpValidatorTestSuite {
 
@@ -19,7 +19,7 @@ public class HttpValidatorTestSuite {
 		// Given
 		String responseBody = "test body";
 		Integer responseCode = 200;
-		WebResponse webResponse = new WebResponse(responseBody, responseCode);
+		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
 		Validator validator = new HttpValidator();
 
 		// When
@@ -39,7 +39,7 @@ public class HttpValidatorTestSuite {
 		// Given
 		String responseBody = "test body";
 		Integer responseCode = 418;
-		WebResponse webResponse = new WebResponse(responseBody, responseCode);
+		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
 		Validator validator = new HttpValidator();
 
 		// When
@@ -57,7 +57,7 @@ public class HttpValidatorTestSuite {
 		// Given
 		String responseBody = null;
 		Integer responseCode = 200;
-		WebResponse webResponse = new WebResponse(responseBody, responseCode);
+		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
 		Validator validator = new HttpValidator();
 
 		// When
@@ -89,7 +89,7 @@ public class HttpValidatorTestSuite {
 		Validator validator = new HttpValidator();
 		String responseBody = "test body";
 		Integer responseCode = 200;
-		WebResponse webResponse = new WebResponse(responseBody, responseCode);
+		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
 		ExchangeRate exchangeRate = new ExchangeRate(new Date(), Currency.EURO, new BigDecimal(2.15));
 
 		// When
@@ -110,7 +110,7 @@ public class HttpValidatorTestSuite {
 		Validator validator = new HttpValidator();
 		String responseBody = "test body";
 		Integer responseCode = 200;
-		WebResponse webResponse = new WebResponse(responseBody, responseCode);
+		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
 
 		// When
 		NbpWebApiException exception = Assert.assertThrows(NbpWebApiException.class,
@@ -126,7 +126,7 @@ public class HttpValidatorTestSuite {
 		Validator validator = new HttpValidator();
 		String responseBody = "404 NotFound - Not Found - Brak danych";
 		Integer responseCode = 404;
-		WebResponse webResponse = new WebResponse(responseBody, responseCode);
+		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
 
 		// When
 		boolean result = validator.isNoDataStatus(webResponse);
@@ -141,7 +141,7 @@ public class HttpValidatorTestSuite {
 		Validator validator = new HttpValidator();
 		String responseBody = "404 NotFound - Not Found - Brak danych";
 		Integer responseCode = 200;
-		WebResponse webResponse = new WebResponse(responseBody, responseCode);
+		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
 
 		// When
 		boolean result = validator.isNoDataStatus(webResponse);
@@ -156,7 +156,7 @@ public class HttpValidatorTestSuite {
 		Validator validator = new HttpValidator();
 		String responseBody = "test body";
 		Integer responseCode = 404;
-		WebResponse webResponse = new WebResponse(responseBody, responseCode);
+		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
 
 		// When
 		boolean result = validator.isNoDataStatus(webResponse);

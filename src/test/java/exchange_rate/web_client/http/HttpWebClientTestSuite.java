@@ -8,7 +8,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import exchange_rate.web_client.WebResponse;
+import exchange_rate.nbp_api_client.downloader.DownloaderResponse;
+import exchange_rate.nbp_api_client.downloader.http.HttpDownloader;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
@@ -37,10 +38,10 @@ public class HttpWebClientTestSuite {
 	public void testRequest() {
 		// Given
 		String testBody = "Test body";
-		HttpWebClient webClient = new HttpWebClient();
+		HttpDownloader webClient = new HttpDownloader();
 		webServer.enqueue(new MockResponse().setResponseCode(418).setBody(testBody));
 		// When
-		WebResponse response = webClient.request(testUrl);
+		DownloaderResponse response = webClient.request(testUrl);
 
 		// Then
 		Assert.assertEquals(418, response.getCode());

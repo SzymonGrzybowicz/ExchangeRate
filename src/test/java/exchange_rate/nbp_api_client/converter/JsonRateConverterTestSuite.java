@@ -7,7 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import exchange_rate.nbp_api_client.Currency;
-import exchange_rate.nbp_api_client.converter.json.JsonRateConverter;
+import exchange_rate.nbp_api_client.converter.json.JsonConverter;
 import exchange_rate.nbp_api_client.dto.ExchangeRate;
 
 public class JsonRateConverterTestSuite {
@@ -20,7 +20,7 @@ public class JsonRateConverterTestSuite {
 	@Test
 	public void test_convert_correct_response() {
 		// Given
-		RateConverter converter = new JsonRateConverter();
+		Converter converter = new JsonConverter();
 
 		// When
 		ExchangeRate exchangeRate = converter.convertResponse(CORRECT_RESPONSE);
@@ -35,7 +35,7 @@ public class JsonRateConverterTestSuite {
 	@Test
 	public void test_convert_wrong_currency_code() {
 		// Given
-		RateConverter converter = new JsonRateConverter();
+		Converter converter = new JsonConverter();
 
 		// When
 		ExchangeRate exchangeRate = converter.convertResponse(WRONG_CURRENCY_CODE_RESPONSE);
@@ -47,7 +47,7 @@ public class JsonRateConverterTestSuite {
 	@Test
 	public void test_convert_no_rate_response() {
 		// Given
-		RateConverter converter = new JsonRateConverter();
+		Converter converter = new JsonConverter();
 
 		// When
 		ExchangeRate exchangeRate = converter.convertResponse(NO_RATE_RESPONSE);
@@ -59,7 +59,7 @@ public class JsonRateConverterTestSuite {
 	@Test
 	public void test_convert_empty_rate_response() {
 		// Given
-		RateConverter converter = new JsonRateConverter();
+		Converter converter = new JsonConverter();
 
 		// When
 		ExchangeRate exchangeRate = converter.convertResponse(EMPTY_RATE_RESPONSE);
@@ -71,7 +71,7 @@ public class JsonRateConverterTestSuite {
 	@Test
 	public void test_convert_empty_string() {
 		// Given
-		RateConverter converter = new JsonRateConverter();
+		Converter converter = new JsonConverter();
 
 		// When
 		ExchangeRate exchangeRate = converter.convertResponse("");
@@ -83,7 +83,7 @@ public class JsonRateConverterTestSuite {
 	@Test
 	public void test_convert_wrong_string() {
 		// Given
-		RateConverter converter = new JsonRateConverter();
+		Converter converter = new JsonConverter();
 
 		// When
 		ExchangeRate exchangeRate = converter.convertResponse("testWRONGstring");

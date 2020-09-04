@@ -1,17 +1,23 @@
 package exchange_rate.nbp_api_client.validator;
 
-import com.sun.istack.NotNull;
+import exchange_rate.nbp_api_client.downloader.DownloaderResponse;
+import exchange_rate.nbp_api_client.exception.checked.NotFoundException;
+import exchange_rate.nbp_api_client.exception.unchecked.BadRequestException;
+import exchange_rate.nbp_api_client.exception.unchecked.ConnectionException;
 
-import exchange_rate.nbp_api_client.dto.ExchangeRate;
-import exchange_rate.nbp_api_client.exception.NbpWebApiException;
-import exchange_rate.web_client.WebResponse;
+public class Validator {
 
-public interface Validator {
+	@SuppressWarnings("incomplete-switch")
+	public void validate(DownloaderResponse downloaderResponse) {
+		switch (downloaderResponse.getStatus()) {
+		case CONNECTION_PROBLEM:
+			throw new ConnectionException("Failed to connect with data source.");
+		case NOT_FOUND:
+			throw new NotFoundException("Cannot find exchange rate! Make sure that data is correct.");
+		case BAD_REQUEST:
+			throw new BadRequestException();
+		}
 
-	void validateWebResponse(WebResponse webResponse) throws NbpWebApiException;
-
-	void validateExchangeRate(ExchangeRate exchangeRate, @NotNull WebResponse webResponse) throws NbpWebApiException;
-
-	boolean isNoDataStatus(WebResponse webResponse);
+	}
 
 }
