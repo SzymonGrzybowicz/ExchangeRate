@@ -18,20 +18,8 @@ public class NbpClient {
 	}
 
 	public ExchangeRate requestActualExchangeRate(Currency currency) throws NbpWebApiException {
-
 		WebResponse response = strategy.getWebClient().request(strategy.getActualCurrencyRateUrl(currency));
-		if (response.getCode() != 200)
-			throw new NbpWebApiException("Response code not equal to 200!", response.getCode(), response.getBody());
-
-		if (response.getBody() == null)
-			throw new NbpWebApiException("Response body is null!", response.getCode(), null);
-
-		ExchangeRate rate = strategy.getRateConverter().convertResponse(response.getBody());
-		if (rate == null)
-			throw new NbpWebApiException("Wrong response body format! Response: ", response.getCode(),
-					response.getBody());
-
-		return rate;
+		return validateAndGetExchangeRate(response);
 	}
 
 	public ExchangeRate requestExchangeRate(Currency currency, Date date) throws NbpWebApiException {
@@ -41,34 +29,28 @@ public class NbpClient {
 		WebResponse response = sendExchangeRateRequestForDate(currency, dateTime);
 
 		int counter = 0;
-		while (response.getCode() == 404 && response.getBody().equals("404 NotFound - Not Found - Brak danych")
-				&& counter < 5) {
+		while (strategy.getValidator().isNoDataStatus(response) && counter < 5) {
 			counter++;
 			dateTime = dateTime.minusDays(1);
 			response = sendExchangeRateRequestForDate(currency, dateTime);
 		}
 
-		if (response.getCode() == 404 && response.getBody().equals("404 NotFound - Not Found - Brak danych"))
+		if (strategy.getValidator().isNoDataStatus(response))
 			throw new NbpWebApiException("Rate not found for that date!", response.getCode(), response.getBody());
 
-		System.out.println(response.getCode() + response.getBody());
-		if (response.getCode() != 200)
-			throw new NbpWebApiException("Response code not equal to 200!", response.getCode(), response.getBody());
-
-		if (response.getBody() == null)
-			throw new NbpWebApiException("Response body is null!", response.getCode(), null);
-
-		ExchangeRate rate = strategy.getRateConverter().convertResponse(response.getBody());
-		if (rate == null)
-			throw new NbpWebApiException("Wrong response body format! Response: ", response.getCode(),
-					response.getBody());
-
-		return rate;
+		return validateAndGetExchangeRate(response);
 	}
 
 	private WebResponse sendExchangeRateRequestForDate(Currency currency, LocalDateTime dateTime) {
 		return strategy.getWebClient().request(
 				strategy.getCurrencyRateUrl(currency, Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant())));
+	}
+
+	private ExchangeRate validateAndGetExchangeRate(WebResponse webResponse) throws NbpWebApiException {
+		strategy.getValidator().validateWebResponse(webResponse);
+		ExchangeRate rate = strategy.getRateConverter().convertResponse(webResponse.getBody());
+		strategy.getValidator().validateExchangeRate(rate, webResponse);
+		return rate;
 	}
 
 //	public Single<Double> getMinimumExchangeRateInPeroid(Currency currency, Date from, Date to) {

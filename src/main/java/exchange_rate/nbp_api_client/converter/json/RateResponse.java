@@ -1,6 +1,6 @@
-package exchange_rate.nbp_api_client.converter;
+package exchange_rate.nbp_api_client.converter.json;
 
-public class RateResponse {
+class RateResponse {
 	private String table;
 	private String currency;
 	private String code;

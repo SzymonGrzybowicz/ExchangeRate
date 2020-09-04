@@ -2,16 +2,16 @@ package exchange_rate.nbp_api_client.exception;
 
 public class NbpWebApiException extends Exception {
 
-	public NbpWebApiException(String description, int responseCode, String responseBody) {
-		super(description + ", responseCod: " + responseCode + ", responseBody: " + responseBody);
+	public NbpWebApiException(String description, Integer responseCode, String responseBody) {
+		super(description + ", responseCode: " + responseCode + ", responseBody: " + responseBody);
 		this.responseCode = responseCode;
 		this.responseBody = responseBody;
 	}
 
-	private final int responseCode;
-	private final String responseBody;
+	private Integer responseCode;
+	private String responseBody;
 
-	public int getResponseCode() {
+	public Integer getResponseCode() {
 		return responseCode;
 	}
 

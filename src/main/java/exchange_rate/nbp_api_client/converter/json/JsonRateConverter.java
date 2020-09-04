@@ -10,8 +10,7 @@ import com.google.gson.JsonSyntaxException;
 
 import exchange_rate.nbp_api_client.Currency;
 import exchange_rate.nbp_api_client.converter.RateConverter;
-import exchange_rate.nbp_api_client.converter.RateResponse;
-import exchange_rate.nbp_api_client.converter.RateResponse.Rate;
+import exchange_rate.nbp_api_client.converter.json.RateResponse.Rate;
 import exchange_rate.nbp_api_client.dto.ExchangeRate;
 
 public class JsonRateConverter implements RateConverter {

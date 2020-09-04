@@ -1,91 +1,194 @@
 package exchange_rate.nbp_api_client;
 
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
 
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Callback;
-import com.squareup.okhttp.HttpUrl;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Protocol;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
+import exchange_rate.nbp_api_client.converter.RateConverter;
+import exchange_rate.nbp_api_client.dto.ExchangeRate;
+import exchange_rate.nbp_api_client.exception.NbpWebApiException;
+import exchange_rate.nbp_api_client.strategy.NbpClientStrategy;
+import exchange_rate.web_client.WebClient;
+import exchange_rate.web_client.WebResponse;
 
-import exchange_rate.nbp_api_client.Currency;
-import exchange_rate.nbp_api_client.NbpClient;
-
-@RunWith(MockitoJUnitRunner.class)
 public class NbpClientTestSuite {
 
-	@Captor
-	private ArgumentCaptor<Callback> captor;
+	private NbpClientStrategy strategyMock = Mockito.mock(NbpClientStrategy.class);
+	private RateConverter converterMock = Mockito.mock(RateConverter.class);
+	private WebClient webClientMock = Mockito.mock(WebClient.class);
+	private String testUrl = "test url";
 
 	@Before
 	public void init() {
-		MockitoAnnotations.openMocks(this);
+		Mockito.when(strategyMock.getActualCurrencyRateUrl(Mockito.any())).thenReturn(testUrl);
+		Mockito.when(strategyMock.getCurrencyRateUrl(Mockito.any(), Mockito.any())).thenReturn(testUrl);
+		Mockito.when(strategyMock.getRateConverter()).thenReturn(converterMock);
+		Mockito.when(strategyMock.getWebClient()).thenReturn(webClientMock);
 	}
 
 	@Test
-	public void testRequestExchangeRateSuccesfull() throws IOException, InterruptedException {
-		OkHttpClient okHttpClient = Mockito.mock(OkHttpClient.class);
-		Call remoteCall = Mockito.mock(Call.class);
-		Mockito.when(okHttpClient.newCall(Mockito.any())).thenReturn(remoteCall);
+	public void test_request_actual_exchange_rate_correct_response() throws NbpWebApiException {
+		// Given
+		String responseBody = "test body";
+		int responseCode = 200;
+		Date date = new Date();
+		BigDecimal rate = new BigDecimal(2.15);
+		NbpClient client = prepareNbpClient(responseBody, responseCode, date, rate,
+				new ExchangeRate(date, Currency.EURO, rate));
 
-		NbpClient nbpClient = new NbpClient(okHttpClient);
+		// When
+		ExchangeRate result = client.requestActualExchangeRate(Currency.EURO);
 
-		nbpClient.requestActualExchangeRate(Currency.AMERICAN_DOLAR).subscribe(v -> Assert.assertEquals((Double) 4.3946, v),
-				e -> Assert.assertTrue(false));
-
-		Mockito.verify(remoteCall).enqueue(captor.capture());
-
-		captor.getValue().onResponse(new Response.Builder().body(ResponseBody.create(
-				MediaType.parse("application/json"),
-				"{\"table\":\"A\",\"currency\":\"euro\",\"code\":\"EUR\",\"rates\":[{\"no\":\"170/A/NBP/2020\",\"effectiveDate\":\"2020-09-01\",\"mid\":4.3946}]}"))
-				.request(new Request.Builder().url(new HttpUrl.Builder().scheme("http").host("some.some").build())
-						.build())
-				.protocol(Protocol.HTTP_1_1).code(200).build());
-
-		new CountDownLatch(1).await(1, TimeUnit.SECONDS); // wait for finish RxJava
+		// Then
+		Assert.assertEquals(rate, result.getRate());
+		Assert.assertEquals(date, result.getDate());
+		Assert.assertEquals(Currency.EURO, result.getCurrency());
 	}
 
 	@Test
-	public void testRequestExchangeRateFailed() throws IOException, InterruptedException {
-		OkHttpClient okHttpClient = Mockito.mock(OkHttpClient.class);
-		Call remoteCall = Mockito.mock(Call.class);
-		Mockito.when(okHttpClient.newCall(Mockito.any())).thenReturn(remoteCall);
+	public void test_request_actual_exchange_rate_wrong_response_code() throws NbpWebApiException {
+		// Given
+		String responseBody = "test body";
+		int responseCode = 418;
+		Date date = new Date();
+		BigDecimal rate = new BigDecimal(2.15);
+		NbpClient client = prepareNbpClient(responseBody, responseCode, date, rate,
+				new ExchangeRate(date, Currency.EURO, rate));
 
-		NbpClient nbpClient = new NbpClient(okHttpClient);
+		// When
+		NbpWebApiException exception = Assert.assertThrows(NbpWebApiException.class,
+				() -> client.requestActualExchangeRate(Currency.EURO));
 
-		nbpClient.requestActualExchangeRate(Currency.AMERICAN_DOLAR).subscribe(v -> Assert.assertTrue(false),
-				e -> Assert.assertTrue(e instanceof TestException));
-
-		Mockito.verify(remoteCall).enqueue(captor.capture());
-
-		captor.getValue().onFailure(
-				new Request.Builder().url(new HttpUrl.Builder().scheme("http").host("some.some").build()).build(),
-				new TestException("Test failure exception"));
-
-		new CountDownLatch(1).await(1, TimeUnit.SECONDS); // wait for finish RxJava
-
+		// Then
+		Assert.assertEquals(responseCode, exception.getResponseCode());
+		Assert.assertEquals(responseBody, exception.getResponseBody());
+		Assert.assertTrue(exception.getMessage().contains("Response code not equal to 200!"));
 	}
 
-	class TestException extends IOException {
+	@Test
+	public void test_request_actual_exchange_rate_body_is_null() throws NbpWebApiException {
+		// Given
+		String responseBody = null;
+		int responseCode = 200;
+		Date date = new Date();
+		BigDecimal rate = new BigDecimal(2.15);
+		NbpClient client = prepareNbpClient(responseBody, responseCode, date, rate,
+				new ExchangeRate(date, Currency.EURO, rate));
 
-		public TestException(String description) {
-			super(description);
-		}
+		// When
+		NbpWebApiException exception = Assert.assertThrows(NbpWebApiException.class,
+				() -> client.requestActualExchangeRate(Currency.EURO));
+
+		// Then
+		Assert.assertEquals(responseCode, exception.getResponseCode());
+		Assert.assertEquals(responseBody, exception.getResponseBody());
+		Assert.assertTrue(exception.getMessage().contains("Response body is null!"));
 	}
+
+	@Test
+	public void test_request_actual_exchange_rate_result_is_null() throws NbpWebApiException {
+		// Given
+		String responseBody = "test body";
+		int responseCode = 200;
+		Date date = new Date();
+		BigDecimal rate = new BigDecimal(2.15);
+		NbpClient client = prepareNbpClient(responseBody, responseCode, date, rate, null);
+
+		// When
+		NbpWebApiException exception = Assert.assertThrows(NbpWebApiException.class,
+				() -> client.requestActualExchangeRate(Currency.EURO));
+
+		// Then
+		Assert.assertEquals(responseCode, exception.getResponseCode());
+		Assert.assertEquals(responseBody, exception.getResponseBody());
+		Assert.assertTrue(exception.getMessage().contains("Wrong response body format!"));
+	}
+
+	@Test
+	public void test_request_exchange_rate_incorect_date() {
+		// Given
+		String responseBody = "404 NotFound - Not Found - Brak danych";
+		int responseCode = 404;
+		Date date = new Date();
+		BigDecimal rate = new BigDecimal(2.15);
+		NbpClient client = prepareNbpClient(responseBody, responseCode, date, rate,
+				new ExchangeRate(date, Currency.EURO, rate));
+
+		// When
+		NbpWebApiException exception = Assert.assertThrows(NbpWebApiException.class,
+				() -> client.requestExchangeRate(Currency.EURO, date));
+
+		// Then
+		Assert.assertEquals(responseCode, exception.getResponseCode());
+		Assert.assertEquals(responseBody, exception.getResponseBody());
+		Assert.assertTrue(exception.getMessage().contains("Rate not found for that date!"));
+	}
+
+	@Test
+	public void test_request_exchange_rate_correct_on_first() throws NbpWebApiException {
+		// Given
+		String responseBody = "test body";
+		int responseCode = 200;
+		Date date = new Date();
+		BigDecimal rate = new BigDecimal(2.15);
+		NbpClient client = prepareNbpClient(responseBody, responseCode, date, rate,
+				new ExchangeRate(date, Currency.EURO, rate));
+
+		// When
+		ExchangeRate result = client.requestExchangeRate(Currency.EURO, date);
+
+		// Then
+		Assert.assertEquals(rate, result.getRate());
+		Assert.assertEquals(date, result.getDate());
+		Assert.assertEquals(Currency.EURO, result.getCurrency());
+	}
+
+	@Test
+	public void test_request_exchange_rate_correct_on_third() throws NbpWebApiException {
+		// Given
+		LocalDate now = LocalDate.now();
+		LocalDate minusThreeDay = now.minusDays(3);
+
+		String url = "Correct on third url";
+		String correctResponseBody = "Correct body";
+
+		String responseBody = "404 NotFound - Not Found - Brak danych";
+		int responseCode = 404;
+		Date date = Date.from(now.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		BigDecimal rate = new BigDecimal(2.15);
+		NbpClient client = prepareNbpClient(responseBody, responseCode, date, rate,
+				new ExchangeRate(date, Currency.EURO, rate));
+
+		Mockito.when(strategyMock.getCurrencyRateUrl(Mockito.any(),
+				Mockito.eq(Date.from(minusThreeDay.atStartOfDay(ZoneId.systemDefault()).toInstant())))).thenReturn(url);
+		WebResponse webResponse = new WebResponse(correctResponseBody, 200);
+		Mockito.when(webClientMock.request(testUrl)).thenReturn(webResponse);
+		Mockito.when(converterMock.convertResponse(webResponse.getBody())).thenReturn(new ExchangeRate(
+				Date.from(minusThreeDay.atStartOfDay(ZoneId.systemDefault()).toInstant()), Currency.EURO, rate));
+
+		// When
+		ExchangeRate result = client.requestExchangeRate(Currency.EURO, date);
+
+		// Then
+		Assert.assertEquals(rate, result.getRate());
+		Assert.assertEquals(Date.from(minusThreeDay.atStartOfDay(ZoneId.systemDefault()).toInstant()),
+				result.getDate());
+		Assert.assertEquals(Currency.EURO, result.getCurrency());
+	}
+
+	private NbpClient prepareNbpClient(String responseBody, int responseCode, Date date, BigDecimal rate,
+			ExchangeRate exchangeRate) {
+
+		WebResponse webResponse = new WebResponse(responseBody, responseCode);
+		Mockito.when(webClientMock.request(testUrl)).thenReturn(webResponse);
+		Mockito.when(converterMock.convertResponse(webResponse.getBody())).thenReturn(exchangeRate);
+		return new NbpClient(strategyMock);
+	}
+
 }
