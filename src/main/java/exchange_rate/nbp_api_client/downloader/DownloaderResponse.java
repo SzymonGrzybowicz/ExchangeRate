@@ -5,9 +5,9 @@ import com.sun.istack.NotNull;
 public class DownloaderResponse {
 
 	private String body;
-	private DownloaderStatus status;
+	private Status status;
 
-	public DownloaderResponse(String body, DownloaderStatus status) {
+	public DownloaderResponse(String body, Status status) {
 		super();
 		this.body = body;
 		this.status = status;
@@ -18,7 +18,11 @@ public class DownloaderResponse {
 	}
 
 	@NotNull
-	public DownloaderStatus getStatus() {
+	public Status getStatus() {
 		return status;
+	}
+
+	public enum Status {
+		OK, NOT_FOUND, CONNECTION_PROBLEM, BAD_REQUEST
 	}
 }

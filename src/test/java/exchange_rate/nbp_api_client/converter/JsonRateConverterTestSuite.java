@@ -1,5 +1,8 @@
 package exchange_rate.nbp_api_client.converter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
+
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 
@@ -9,6 +12,9 @@ import org.junit.Test;
 import exchange_rate.nbp_api_client.Currency;
 import exchange_rate.nbp_api_client.converter.json.JsonConverter;
 import exchange_rate.nbp_api_client.dto.ExchangeRate;
+import exchange_rate.nbp_api_client.exception.unchecked.ConvertResponseException;
+import exchange_rate.nbp_api_client.exception.unchecked.DateParseException;
+import exchange_rate.nbp_api_client.exception.unchecked.ResponseSyntaxException;
 
 public class JsonRateConverterTestSuite {
 
@@ -16,14 +22,15 @@ public class JsonRateConverterTestSuite {
 	private final String WRONG_CURRENCY_CODE_RESPONSE = "{\"table\":\"A\",\"currency\":\"euro\",\"code\":\"STH\",\"rates\":[{\"no\":\"172/A/NBP/2020\",\"effectiveDate\":\"2020-09-03\",\"mid\":4.4181}]}";
 	private final String NO_RATE_RESPONSE = "{\"table\":\"A\",\"currency\":\"euro\",\"code\":\"EUR\"}";
 	private final String EMPTY_RATE_RESPONSE = "{\"table\":\"A\",\"currency\":\"euro\",\"code\":\"EUR\",\"rates\":[]}";
+	private final String WRONG_DATE_FORMAT_RESPONSE = "{\"table\":\"A\",\"currency\":\"euro\",\"code\":\"EUR\",\"rates\":[{\"no\":\"172/A/NBP/2020\",\"effectiveDate\":\"2020 09 03\",\"mid\":4.4181}]}";
 
 	@Test
-	public void test_convert_correct_response() {
+	public void test_convert_correctResponse() {
 		// Given
 		Converter converter = new JsonConverter();
 
 		// When
-		ExchangeRate exchangeRate = converter.convertResponse(CORRECT_RESPONSE);
+		ExchangeRate exchangeRate = converter.convert(CORRECT_RESPONSE);
 
 		// Then
 		Assert.assertEquals(Currency.EURO, exchangeRate.getCurrency());
@@ -33,63 +40,77 @@ public class JsonRateConverterTestSuite {
 	}
 
 	@Test
-	public void test_convert_wrong_currency_code() {
+	public void test_convert_wrongCurrencyCode() {
 		// Given
 		Converter converter = new JsonConverter();
 
 		// When
-		ExchangeRate exchangeRate = converter.convertResponse(WRONG_CURRENCY_CODE_RESPONSE);
+		Exception exception = assertThrows(ConvertResponseException.class,
+				() -> converter.convert(WRONG_CURRENCY_CODE_RESPONSE));
 
 		// Then
-		Assert.assertEquals(null, exchangeRate);
+		assertThat(exception).hasMessageContaining("Cannot convert response, cannot find currency by alphabetic code.");
 	}
 
 	@Test
-	public void test_convert_no_rate_response() {
+	public void test_convert_noRateResponse() {
 		// Given
 		Converter converter = new JsonConverter();
 
 		// When
-		ExchangeRate exchangeRate = converter.convertResponse(NO_RATE_RESPONSE);
+		Exception exception = assertThrows(ConvertResponseException.class, () -> converter.convert(NO_RATE_RESPONSE));
 
 		// Then
-		Assert.assertEquals(null, exchangeRate);
+		assertThat(exception).hasMessageContaining("Cannot convert response, rates is null.");
 	}
 
 	@Test
-	public void test_convert_empty_rate_response() {
+	public void test_convert_emptyRateResponse() {
 		// Given
 		Converter converter = new JsonConverter();
 
 		// When
-		ExchangeRate exchangeRate = converter.convertResponse(EMPTY_RATE_RESPONSE);
+		Exception exception = assertThrows(ConvertResponseException.class,
+				() -> converter.convert(EMPTY_RATE_RESPONSE));
 
 		// Then
-		Assert.assertEquals(null, exchangeRate);
+		assertThat(exception).hasMessageContaining("Cannot convert response, rates is empty.");
 	}
 
 	@Test
-	public void test_convert_empty_string() {
+	public void test_convert_emptyResponse() {
 		// Given
 		Converter converter = new JsonConverter();
 
 		// When
-		ExchangeRate exchangeRate = converter.convertResponse("");
+		Exception exception = assertThrows(ConvertResponseException.class, () -> converter.convert(""));
 
 		// Then
-		Assert.assertEquals(null, exchangeRate);
+		assertThat(exception).hasMessageContaining("Cannot convert response, value is null.");
 	}
 
 	@Test
-	public void test_convert_wrong_string() {
+	public void test_convert_wrongResponse() {
 		// Given
 		Converter converter = new JsonConverter();
 
 		// When
-		ExchangeRate exchangeRate = converter.convertResponse("testWRONGstring");
+		Exception exception = assertThrows(ResponseSyntaxException.class, () -> converter.convert("testWRONGstring"));
 
 		// Then
-		Assert.assertEquals(null, exchangeRate);
+		assertThat(exception).hasMessageContaining("Cannot convert response. Wrong Json syntax.");
+	}
 
+	@Test
+	public void test_convert_wrongDateFormat() {
+		// Given
+		Converter converter = new JsonConverter();
+
+		// When
+		Exception exception = assertThrows(DateParseException.class,
+				() -> converter.convert(WRONG_DATE_FORMAT_RESPONSE));
+
+		// Then
+		assertThat(exception).hasMessageContaining("Cannot convert response. Wrong data format.");
 	}
 }

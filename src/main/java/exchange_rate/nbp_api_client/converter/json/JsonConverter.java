@@ -51,9 +51,9 @@ public class JsonConverter implements Converter {
 			Date date = new SimpleDateFormat("yyyy-MM-dd").parse(rate.getEffectiveDate());
 			return new ExchangeRate(date, currency, new BigDecimal(rate.getMid()));
 		} catch (JsonSyntaxException e) {
-			throw new ResponseSyntaxException();
+			throw new ResponseSyntaxException("Cannot convert response. Wrong Json syntax. Response: " + response);
 		} catch (ParseException e) {
-			throw new DateParseException();
+			throw new DateParseException("Cannot convert response. Wrong data format. Response: " + response);
 		}
 	}
 }

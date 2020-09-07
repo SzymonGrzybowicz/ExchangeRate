@@ -6,7 +6,6 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
-import exchange_rate.nbp_api_client.downloader.DownloaderStatus;
 import exchange_rate.nbp_api_client.downloader.Downloader;
 import exchange_rate.nbp_api_client.downloader.DownloaderResponse;
 
@@ -22,16 +21,16 @@ public class HttpDownloader implements Downloader {
 
 			switch (response.code()) {
 			case 200:
-				return new DownloaderResponse(response.body().string(), DownloaderStatus.OK);
+				return new DownloaderResponse(response.body().string(), DownloaderResponse.Status.OK);
 			case 404:
-				return new DownloaderResponse(response.body().string(), DownloaderStatus.NOT_FOUND);
+				return new DownloaderResponse(response.body().string(), DownloaderResponse.Status.NOT_FOUND);
 			default:
-				return new DownloaderResponse(response.body().string(), DownloaderStatus.BAD_REQUEST);
+				return new DownloaderResponse(response.body().string(), DownloaderResponse.Status.BAD_REQUEST);
 			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
-			return new DownloaderResponse("connection broken", DownloaderStatus.CONNECTION_PROBLEM);
+			return new DownloaderResponse("connection broken", DownloaderResponse.Status.CONNECTION_PROBLEM);
 		}
 	}
 }

@@ -17,7 +17,6 @@ public class Validator {
 		case BAD_REQUEST:
 			throw new BadRequestException();
 		}
-
 	}
 
 }

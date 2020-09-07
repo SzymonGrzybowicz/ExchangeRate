@@ -1,15 +1,14 @@
 package exchange_rate.nbp_api_client.validator.http;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.Assert.assertThrows;
 
-import org.junit.Assert;
 import org.junit.Test;
 
-import exchange_rate.nbp_api_client.Currency;
 import exchange_rate.nbp_api_client.downloader.DownloaderResponse;
-import exchange_rate.nbp_api_client.dto.ExchangeRate;
-import exchange_rate.nbp_api_client.exception.NbpWebApiException;
+import exchange_rate.nbp_api_client.exception.checked.NotFoundException;
+import exchange_rate.nbp_api_client.exception.unchecked.BadRequestException;
 import exchange_rate.nbp_api_client.validator.Validator;
 
 public class HttpValidatorTestSuite {
@@ -18,151 +17,38 @@ public class HttpValidatorTestSuite {
 	public void test_validateWebResponse_correctData() {
 		// Given
 		String responseBody = "test body";
-		Integer responseCode = 200;
-		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
-		Validator validator = new HttpValidator();
+		DownloaderResponse.Status downloaderStatus = DownloaderResponse.Status.OK;
+		DownloaderResponse response = new DownloaderResponse(responseBody, downloaderStatus);
+		Validator validator = new Validator();
 
-		// When
-		NbpWebApiException exception = null;
-		try {
-			validator.validateWebResponse(webResponse);
-		} catch (NbpWebApiException e) {
-			exception = e;
-		}
-
-		// Then
-		Assert.assertNull(exception);
+		// When && Then
+		assertThatCode(() -> validator.validate(response)).doesNotThrowAnyException();
 	}
 
 	@Test
-	public void test_validateWebResponse_incorrectResponseCode() {
+	public void test_validateWebResponse_notFoundStatus() {
 		// Given
 		String responseBody = "test body";
-		Integer responseCode = 418;
-		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
-		Validator validator = new HttpValidator();
+		DownloaderResponse.Status downloaderStatus = DownloaderResponse.Status.NOT_FOUND;
+		DownloaderResponse response = new DownloaderResponse(responseBody, downloaderStatus);
+		Validator validator = new Validator();
 
 		// When
-		NbpWebApiException exception = Assert.assertThrows(NbpWebApiException.class,
-				() -> validator.validateWebResponse(webResponse));
+		Exception exception = assertThrows(NotFoundException.class, () -> validator.validate(response));
 
 		// Then
-		Assert.assertEquals(responseCode, exception.getResponseCode());
-		Assert.assertEquals(responseBody, exception.getResponseBody());
-		Assert.assertTrue(exception.getMessage().contains("Response code not equal to 200!"));
+		assertThat(exception).hasMessageContaining("Cannot find exchange rate! Make sure that data is correct.");
 	}
 
 	@Test
-	public void test_validateWebResponse_bodyEqualsNull() {
+	public void test_validateWebResponse_badRequest() {
 		// Given
-		String responseBody = null;
-		Integer responseCode = 200;
-		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
-		Validator validator = new HttpValidator();
-
-		// When
-		NbpWebApiException exception = Assert.assertThrows(NbpWebApiException.class,
-				() -> validator.validateWebResponse(webResponse));
-
-		// Then
-		Assert.assertEquals(responseCode, exception.getResponseCode());
-		Assert.assertEquals(responseBody, exception.getResponseBody());
-		Assert.assertTrue(exception.getMessage().contains("Response body is null!"));
-	}
-
-	@Test
-	public void test_validateWebResponse_responseEqualsNull() {
-		// Given
-		Validator validator = new HttpValidator();
-
-		// When
-		NbpWebApiException exception = Assert.assertThrows(NbpWebApiException.class,
-				() -> validator.validateWebResponse(null));
-
-		// Then
-		Assert.assertTrue(exception.getMessage().contains("Web response has wrong format!"));
-	}
-
-	@Test
-	public void test_validateExchangeRate_correctData() {
-		// Given
-		Validator validator = new HttpValidator();
 		String responseBody = "test body";
-		Integer responseCode = 200;
-		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
-		ExchangeRate exchangeRate = new ExchangeRate(new Date(), Currency.EURO, new BigDecimal(2.15));
+		DownloaderResponse.Status downloaderStatus = DownloaderResponse.Status.BAD_REQUEST;
+		DownloaderResponse response = new DownloaderResponse(responseBody, downloaderStatus);
+		Validator validator = new Validator();
 
-		// When
-		NbpWebApiException exception = null;
-		try {
-			validator.validateExchangeRate(exchangeRate, webResponse);
-		} catch (NbpWebApiException e) {
-			exception = e;
-		}
-
-		// Then
-		Assert.assertNull(exception);
+		// When && Then
+		assertThrows(BadRequestException.class, () -> validator.validate(response));
 	}
-
-	@Test
-	public void test_validateExchangeRate_rateEqualsNull() {
-		// Given
-		Validator validator = new HttpValidator();
-		String responseBody = "test body";
-		Integer responseCode = 200;
-		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
-
-		// When
-		NbpWebApiException exception = Assert.assertThrows(NbpWebApiException.class,
-				() -> validator.validateExchangeRate(null, webResponse));
-
-		// Then
-		Assert.assertTrue(exception.getMessage().contains("Wrong response body format!"));
-	}
-
-	@Test
-	public void test_isNoDataStatus_correct() {
-		// Given
-		Validator validator = new HttpValidator();
-		String responseBody = "404 NotFound - Not Found - Brak danych";
-		Integer responseCode = 404;
-		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
-
-		// When
-		boolean result = validator.isNoDataStatus(webResponse);
-
-		// Then
-		Assert.assertTrue(result);
-	}
-
-	@Test
-	public void test_isNoDataStatus_incorrectStatus() {
-		// Given
-		Validator validator = new HttpValidator();
-		String responseBody = "404 NotFound - Not Found - Brak danych";
-		Integer responseCode = 200;
-		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
-
-		// When
-		boolean result = validator.isNoDataStatus(webResponse);
-
-		// Then
-		Assert.assertFalse(result);
-	}
-
-	@Test
-	public void test_isNoDataStatus_incorrectBody() {
-		// Given
-		Validator validator = new HttpValidator();
-		String responseBody = "test body";
-		Integer responseCode = 404;
-		DownloaderResponse webResponse = new DownloaderResponse(responseBody, responseCode);
-
-		// When
-		boolean result = validator.isNoDataStatus(webResponse);
-
-		// Then
-		Assert.assertFalse(result);
-	}
-
 }
