@@ -20,7 +20,7 @@ public class Main {
 		Path path = new HttpPath();
 		Converter converter = new JsonConverter();
 
-		NbpClient client = new NbpClient(downloader, path, converter);
+		NbpClient client = new NbpClient(downloader, path, converter, null);
 		System.out.println(client.requestActualExchangeRate(Currency.AMERICAN_DOLAR).getRate());
 
 		Calendar calendar = Calendar.getInstance();
@@ -28,5 +28,9 @@ public class Main {
 		ExchangeRate rate = client.requestExchangeRate(Currency.EURO, calendar.getTime());
 		System.out.println(rate.getRate());
 		System.out.println(rate.getDate());
+
+		ExchangeRate rate2 = client.requestExchangeRate(Currency.EURO, calendar.getTime());
+
+		System.out.println(rate.equals(rate2));
 	}
 }

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
+import exchange_rate.nbp_api_client.cache.Cache;
 import exchange_rate.nbp_api_client.converter.Converter;
 import exchange_rate.nbp_api_client.downloader.Downloader;
 import exchange_rate.nbp_api_client.downloader.DownloaderResponse;
@@ -17,21 +18,51 @@ public class NbpClient {
 	private final Downloader downloader;
 	private final Path path;
 	private final Converter converter;
+	private Cache cache;
 	private final Validator validator = new Validator();
 
-	public NbpClient(Downloader downloader, Path path, Converter converter) {
+	public NbpClient(Downloader downloader, Path path, Converter converter, Cache cache) {
 		this.downloader = downloader;
 		this.path = path;
 		this.converter = converter;
+		this.cache = cache;
+	}
+
+	public NbpClient(Downloader downloader, Path path, Converter converter) {
+		super();
+		this.downloader = downloader;
+		this.path = path;
+		this.converter = converter;
+		this.cache = null;
 	}
 
 	public ExchangeRate requestActualExchangeRate(Currency currency) {
+		ExchangeRate result;
+		if (cache != null) {
+			result = cache.getOrNull(currency, new Date());
+			if (result != null) {
+				return result;
+			}
+		}
+
 		DownloaderResponse response = downloader.get(path.get(currency, converter.getDataFormat()));
 		validator.validate(response);
-		return converter.convert(response.getBody());
+		result = converter.convert(response.getBody());
+		if (cache != null) {
+			cache.save(result);
+		}
+		return result;
 	}
 
 	public ExchangeRate requestExchangeRate(Currency currency, Date date) {
+
+		ExchangeRate result;
+		if (cache != null) {
+			result = cache.getOrNull(currency, new Date());
+			if (result != null) {
+				return result;
+			}
+		}
 
 		LocalDateTime dateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
 
@@ -42,7 +73,11 @@ public class NbpClient {
 				response = downloader.get(path.get(currency,
 						Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant()), converter.getDataFormat()));
 				validator.validate(response);
-				return converter.convert(response.getBody());
+				result = converter.convert(response.getBody());
+				if (cache != null) {
+					cache.save(result);
+				}
+				return result;
 			} catch (NotFoundException e) {
 				counter++;
 				dateTime = dateTime.minusDays(1);

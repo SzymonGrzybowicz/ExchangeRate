@@ -1,7 +1,5 @@
 package exchange_rate.nbp_api_client.downloader;
 
-import com.sun.istack.NotNull;
-
 public class DownloaderResponse {
 
 	private String body;
@@ -17,7 +15,6 @@ public class DownloaderResponse {
 		return body;
 	}
 
-	@NotNull
 	public Status getStatus() {
 		return status;
 	}

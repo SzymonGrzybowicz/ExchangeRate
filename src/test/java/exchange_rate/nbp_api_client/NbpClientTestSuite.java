@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import exchange_rate.nbp_api_client.cache.Cache;
 import exchange_rate.nbp_api_client.converter.Converter;
 import exchange_rate.nbp_api_client.converter.json.JsonConverter;
 import exchange_rate.nbp_api_client.downloader.Downloader;
@@ -34,12 +36,12 @@ public class NbpClientTestSuite {
 	private String testUrl;
 	private String testPath = "/testPath";
 	private BigDecimal testResponseRate = new BigDecimal("4.4181");
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	private String testResponseDate = "2020-05-03";
+	private Date testResponseDate = new Date(1234);
 	private Currency testResponseCurrency = Currency.EURO;
 	private final String CORRECT_RESPONSE = "{\"table\":\"A\",\"currency\":\""
 			+ testResponseCurrency.getAlphabeticCode() + "\",\"code\":\"EUR\",\"rates\": "
-			+ "[{\"no\":\"172/A/NBP/2020\",\"effectiveDate\":\"" + testResponseDate + "\",\"mid\":\"" + testResponseRate
+			+ "[{\"no\":\"172/A/NBP/2020\",\"effectiveDate\":\""
+			+ new SimpleDateFormat("yyyy-MM-dd").format(testResponseDate) + "\",\"mid\":\"" + testResponseRate
 			+ "\"}]}";
 
 	@BeforeClass
@@ -62,10 +64,11 @@ public class NbpClientTestSuite {
 	public void test_requestActualExchangeRate_correctResponse() {
 		// Given
 		Path path = Mockito.mock(Path.class);
-		Mockito.when(path.get(Mockito.any(), Mockito.any())).thenReturn(testUrl);
 		Downloader downloader = new HttpDownloader();
 		Converter converter = new JsonConverter();
 		NbpClient nbpClient = new NbpClient(downloader, path, converter);
+
+		Mockito.when(path.get(Mockito.any(), Mockito.any())).thenReturn(testUrl);
 
 		Dispatcher dispacher = new Dispatcher() {
 
@@ -85,17 +88,18 @@ public class NbpClientTestSuite {
 		// Then
 		assertThat(result.getCurrency()).isEqualTo(testResponseCurrency);
 		assertThat(result.getRate()).isEqualTo(testResponseRate);
-		assertThat(dateFormat.format(result.getDate())).isEqualTo(testResponseDate);
+		assertThat(DateUtils.isSameDay(result.getDate(), testResponseDate)).isTrue();
 	}
 
 	@Test
 	public void test_requestActualExchangeRate_wrongResponse() {
 		// Given
 		Path path = Mockito.mock(Path.class);
-		Mockito.when(path.get(Mockito.any(), Mockito.any())).thenReturn(testUrl);
 		Downloader downloader = new HttpDownloader();
 		Converter converter = new JsonConverter();
 		NbpClient nbpClient = new NbpClient(downloader, path, converter);
+
+		Mockito.when(path.get(Mockito.any(), Mockito.any())).thenReturn(testUrl);
 
 		Dispatcher dispacher = new Dispatcher() {
 
@@ -118,10 +122,11 @@ public class NbpClientTestSuite {
 	public void test_requestExchangeRate_correctOnFirstDay() {
 		// Given
 		Path path = Mockito.mock(Path.class);
-		Mockito.when(path.get(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(testUrl);
 		Downloader downloader = new HttpDownloader();
 		Converter converter = new JsonConverter();
 		NbpClient nbpClient = new NbpClient(downloader, path, converter);
+
+		Mockito.when(path.get(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(testUrl);
 
 		Dispatcher dispacher = new Dispatcher() {
 
@@ -141,16 +146,17 @@ public class NbpClientTestSuite {
 		// Then
 		assertThat(result.getCurrency()).isEqualTo(testResponseCurrency);
 		assertThat(result.getRate()).isEqualTo(testResponseRate);
-		assertThat(dateFormat.format(result.getDate())).isEqualTo(testResponseDate);
+		assertThat(DateUtils.isSameDay(result.getDate(), testResponseDate)).isTrue();
 	}
 
 	@Test
-	public void test_requestExchangeRate_noCorrectResponse() {
+	public void test_requestExchangeRate_wrongResponse() {
 		// Given
 		Path path = Mockito.mock(Path.class);
 		Downloader downloader = new HttpDownloader();
 		Converter converter = new JsonConverter();
 		NbpClient nbpClient = new NbpClient(downloader, path, converter);
+
 		Mockito.when(path.get(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(testUrl);
 
 		Dispatcher dispacher = new Dispatcher() {
@@ -209,7 +215,7 @@ public class NbpClientTestSuite {
 		// Then
 		assertThat(result.getCurrency()).isEqualTo(testResponseCurrency);
 		assertThat(result.getRate()).isEqualTo(testResponseRate);
-		assertThat(dateFormat.format(result.getDate())).isEqualTo(testResponseDate);
+		assertThat(DateUtils.isSameDay(result.getDate(), testResponseDate)).isTrue();
 	}
 
 	@Test
@@ -250,6 +256,120 @@ public class NbpClientTestSuite {
 
 		// Then
 		assertThat(result).hasMessage("Cannot find exchange rate for that date! Make sure that data is correct.");
+	}
+
+	@Test
+	public void test_requestActualExchangeRate_objectFromCache() {
+		// Given
+		Path path = Mockito.mock(Path.class);
+		Downloader downloader = Mockito.mock(Downloader.class);
+		Cache cache = Mockito.mock(Cache.class);
+		Converter converter = new JsonConverter();
+
+		ExchangeRate testExchangeRate = new ExchangeRate(testResponseDate, testResponseCurrency, testResponseRate);
+		Mockito.when(cache.getOrNull(Mockito.any(), Mockito.any())).thenReturn(testExchangeRate);
+
+		NbpClient nbpClient = new NbpClient(downloader, path, converter, cache);
+
+		// When
+		ExchangeRate result = nbpClient.requestActualExchangeRate(testResponseCurrency);
+
+		// Then
+		Mockito.verify(downloader, Mockito.never()).get(Mockito.any());
+		assertThat(result.getCurrency()).isEqualTo(testResponseCurrency);
+		assertThat(result.getRate()).isEqualTo(testResponseRate);
+		assertThat(DateUtils.isSameDay(result.getDate(), testResponseDate)).isTrue();
+	}
+
+	@Test
+	public void test_requestActualExchangeRate_nullFromCache() {
+		// Given
+		Path path = Mockito.mock(Path.class);
+		Cache cache = Mockito.mock(Cache.class);
+		Downloader downloader = new HttpDownloader();
+		Converter converter = new JsonConverter();
+		NbpClient nbpClient = new NbpClient(downloader, path, converter, cache);
+
+		Mockito.when(path.get(Mockito.any(), Mockito.any())).thenReturn(testUrl);
+		Mockito.when(cache.getOrNull(Mockito.any(), Mockito.any())).thenReturn(null);
+
+		Dispatcher dispacher = new Dispatcher() {
+
+			@Override
+			public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+				if (request.getPath().contains(testPath)) {
+					return new MockResponse().setResponseCode(200).setBody(CORRECT_RESPONSE);
+				}
+				return new MockResponse().setResponseCode(404);
+			}
+		};
+		webServer.setDispatcher(dispacher);
+
+		// When
+		ExchangeRate result = nbpClient.requestActualExchangeRate(testResponseCurrency);
+
+		// Then
+		Mockito.verify(cache).save(result);
+		assertThat(result.getCurrency()).isEqualTo(testResponseCurrency);
+		assertThat(result.getRate()).isEqualTo(testResponseRate);
+		assertThat(DateUtils.isSameDay(result.getDate(), testResponseDate)).isTrue();
+	}
+
+	@Test
+	public void test_requestExchangeRate_objectFromCache() {
+		// Given
+		Path path = Mockito.mock(Path.class);
+		Downloader downloader = Mockito.mock(Downloader.class);
+		Cache cache = Mockito.mock(Cache.class);
+		Converter converter = new JsonConverter();
+
+		ExchangeRate testExchangeRate = new ExchangeRate(testResponseDate, testResponseCurrency, testResponseRate);
+		Mockito.when(cache.getOrNull(Mockito.any(), Mockito.any())).thenReturn(testExchangeRate);
+
+		NbpClient nbpClient = new NbpClient(downloader, path, converter, cache);
+
+		// When
+		ExchangeRate result = nbpClient.requestExchangeRate(testResponseCurrency, testResponseDate);
+
+		// Then
+		Mockito.verify(downloader, Mockito.never()).get(Mockito.any());
+		assertThat(result.getCurrency()).isEqualTo(testResponseCurrency);
+		assertThat(result.getRate()).isEqualTo(testResponseRate);
+		assertThat(DateUtils.isSameDay(result.getDate(), testResponseDate)).isTrue();
+	}
+
+	@Test
+	public void test_requestExchangeRate_nullFromCache() {
+		// Given
+		Path path = Mockito.mock(Path.class);
+		Cache cache = Mockito.mock(Cache.class);
+		Downloader downloader = new HttpDownloader();
+		Converter converter = new JsonConverter();
+		NbpClient nbpClient = new NbpClient(downloader, path, converter, cache);
+
+		Mockito.when(path.get(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(testUrl);
+		Mockito.when(cache.getOrNull(Mockito.any(), Mockito.any())).thenReturn(null);
+
+		Dispatcher dispacher = new Dispatcher() {
+
+			@Override
+			public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+				if (request.getPath().contains(testPath)) {
+					return new MockResponse().setResponseCode(200).setBody(CORRECT_RESPONSE);
+				}
+				return new MockResponse().setResponseCode(404);
+			}
+		};
+		webServer.setDispatcher(dispacher);
+
+		// When
+		ExchangeRate result = nbpClient.requestExchangeRate(testResponseCurrency, new Date());
+
+		// Then
+		Mockito.verify(cache).save(result);
+		assertThat(result.getCurrency()).isEqualTo(testResponseCurrency);
+		assertThat(result.getRate()).isEqualTo(testResponseRate);
+		assertThat(DateUtils.isSameDay(result.getDate(), testResponseDate)).isTrue();
 	}
 
 }

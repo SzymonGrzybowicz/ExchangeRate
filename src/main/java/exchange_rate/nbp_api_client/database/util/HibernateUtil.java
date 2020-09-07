@@ -1,4 +1,4 @@
-package exchange_rate.database.util;
+package exchange_rate.nbp_api_client.database.util;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
