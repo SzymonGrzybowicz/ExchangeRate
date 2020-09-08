@@ -1,10 +1,10 @@
 package exchange_rate.nbp_api_client.converter.json;
 
-class RateResponse {
+class CurrencyResponse {
 	private String table;
 	private String currency;
 	private String code;
-	private Rate[] rates;
+	private CurrencyRate[] rates;
 
 	public String getTable() {
 		return table;
@@ -18,24 +18,24 @@ class RateResponse {
 		return code;
 	}
 
-	public Rate[] getRates() {
+	public CurrencyRate[] getRates() {
 		return rates;
 	}
 
-	public RateResponse(String table, String currency, String code) {
+	public CurrencyResponse(String table, String currency, String code) {
 		super();
 		this.table = table;
 		this.currency = currency;
 		this.code = code;
 	}
 
-	public class Rate {
+	public class CurrencyRate {
 
 		private String no;
 		private String effectiveDate;
 		private String mid;
 
-		public Rate(String no, String effectiveDate, String mid) {
+		public CurrencyRate(String no, String effectiveDate, String mid) {
 			super();
 			this.no = no;
 			this.effectiveDate = effectiveDate;

@@ -1,4 +1,4 @@
-package exchange_rate.nbp_api_client.database.entity;
+package exchange_rate.nbp_api_client.database.exchange_rate.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -16,7 +16,7 @@ import javax.persistence.TemporalType;
 
 import exchange_rate.nbp_api_client.Currency;
 
-@Entity(name = "ExchangeRate")
+@Entity(name = "exchange_rate")
 public class ExchangeRateEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;

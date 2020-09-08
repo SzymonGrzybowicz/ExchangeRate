@@ -9,5 +9,5 @@ public interface Cache {
 
 	ExchangeRate getOrNull(Currency currency, Date date);
 
-	void save(ExchangeRate exchangeRate);
+	void saveOrUpdateIfExists(ExchangeRate exchangeRate);
 }

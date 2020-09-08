@@ -10,4 +10,8 @@ public interface Path {
 
 	String get(Currency currency, Date date, DataFormat dataFormat);
 
+	String getAll(DataFormat dataFormat);
+
+	String getAll(Date date, DataFormat dataFormat);
+
 }

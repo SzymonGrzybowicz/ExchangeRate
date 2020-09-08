@@ -10,6 +10,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 
 import exchange_rate.nbp_api_client.Currency;
+import exchange_rate.nbp_api_client.database.exchange_rate.ExchangeRateRepository;
 import exchange_rate.nbp_api_client.dto.ExchangeRate;
 
 public class ExchangeRateRepositoryTestSuite {
