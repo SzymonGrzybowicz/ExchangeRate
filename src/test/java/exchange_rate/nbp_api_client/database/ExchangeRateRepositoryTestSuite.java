@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
@@ -17,54 +17,38 @@ public class ExchangeRateRepositoryTestSuite {
 
 	private ExchangeRateRepository repository = new ExchangeRateRepository();
 
-	private Date testDate = new Date(1234);
-	private Currency testCurrency = Currency.EURO;
-	private BigDecimal testRate = new BigDecimal("2.14");
-
 	@Test
-	public void test_save() {
+	public void test_saveRead() {
 		// Given
-		ExchangeRate rate = new ExchangeRate(testDate, testCurrency, testRate);
-		repository.save(rate);
+		Date exceptedDate = new Date(new Random().nextInt());
+		Currency exceptedCurrency = Currency.EURO;
+		BigDecimal exceptedRate = new BigDecimal("2.14");
+		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
+		repository.save(exceptedResult);
 
 		// When
-		List<ExchangeRate> result = repository.readAllRecords();
+		ExchangeRate result = repository.getOrNull(exceptedCurrency, exceptedDate);
 
 		// Then
-		assertThat(result).isNotEmpty().anyMatch(e -> e.equals(rate));
+		assertThat(exceptedResult).isNotNull();
+		assertThat(exceptedResult).isEqualTo(result);
 
 		// Clean up
-		repository.delete(rate);
-	}
-
-	@Test
-	public void test_read_byCurrencyAndDate() {
-		// Given
-		ExchangeRate rate = new ExchangeRate(testDate, testCurrency, testRate);
-		repository.save(rate);
-
-		// When
-		rate = repository.read(testCurrency, testDate);
-
-		// Then
-		assertThat(rate).isNotNull();
-		assertThat(rate.getRate().doubleValue()).isEqualTo(testRate.doubleValue());
-		assertThat(rate.getCurrency()).isEqualTo(testCurrency);
-		assertThat(DateUtils.isSameDay(rate.getDate(), testDate)).isTrue();
-
-		// Clean up
-		repository.delete(rate);
+		repository.delete(exceptedResult);
 	}
 
 	@Test
 	public void test_delete() {
 		// Given
+		Date testDate = new Date(new Random().nextInt());
+		Currency testCurrency = Currency.EURO;
+		BigDecimal testRate = new BigDecimal("2.14");
 		ExchangeRate rate = new ExchangeRate(testDate, testCurrency, testRate);
 		repository.save(rate);
 
 		// When
 		repository.delete(rate);
-		rate = repository.read(testCurrency, testDate);
+		rate = repository.getOrNull(testCurrency, testDate);
 
 		// Then
 		assertThat(rate).isNull();
@@ -73,6 +57,9 @@ public class ExchangeRateRepositoryTestSuite {
 	@Test
 	public void test_update() {
 		// Given
+		Date testDate = new Date(new Random().nextInt());
+		Currency testCurrency = Currency.EURO;
+		BigDecimal testRate = new BigDecimal("2.14");
 		ExchangeRate rate = new ExchangeRate(testDate, testCurrency, testRate);
 		repository.save(rate);
 		BigDecimal updatedRate = testRate.multiply(new BigDecimal(100));
@@ -80,7 +67,7 @@ public class ExchangeRateRepositoryTestSuite {
 		// When
 		rate.setRate(updatedRate);
 		repository.update(rate);
-		rate = repository.read(testCurrency, testDate);
+		rate = repository.getOrNull(testCurrency, testDate);
 
 		// Then
 		assertThat(rate).isNotNull();

@@ -14,7 +14,7 @@ public class DatabaseCache implements Cache {
 
 	@Override
 	public ExchangeRate getOrNull(Currency currency, Date date) {
-		return repository.read(currency, date);
+		return repository.getOrNull(currency, date);
 	}
 
 	@Override

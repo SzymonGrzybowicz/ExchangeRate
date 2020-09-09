@@ -1,4 +1,4 @@
-package exchange_rate.nbp_api_client.converter.json;
+package exchange_rate.nbp_api_client.downloader.http.converter.json;
 
 class CurrencyResponse {
 	private String table;
