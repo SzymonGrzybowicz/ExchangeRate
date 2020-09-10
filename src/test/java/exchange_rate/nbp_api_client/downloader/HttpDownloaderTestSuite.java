@@ -44,8 +44,8 @@ public class HttpDownloaderTestSuite {
 	@Test
 	public void test_getActual_responseCode200() throws IOException {
 		// Given
-		String testBody = "testBody";
-		Response responseMock = mockResponse(200, testBody);
+		String body = "testBody";
+		Response responseMock = mockResponse(200, body);
 		OkHttpClient clientMock = mockHttpClient(responseMock);
 
 		NbpHttpDownloader downloader = new NbpHttpDownloader();
@@ -56,7 +56,7 @@ public class HttpDownloaderTestSuite {
 		downloader.get(Currency.EURO);
 
 		// Then
-		verify(converterMock).convertCurrencyResponse(testBody);
+		verify(converterMock).convertCurrencyResponse(body);
 	}
 
 	@Test
@@ -104,8 +104,8 @@ public class HttpDownloaderTestSuite {
 	@Test
 	public void test_getForDate_responseCode200() throws IOException {
 		// Given
-		String testBody = "testBody";
-		Response responseMock = mockResponse(200, testBody);
+		String body = "testBody";
+		Response responseMock = mockResponse(200, body);
 		OkHttpClient clientMock = mockHttpClient(responseMock);
 
 		NbpHttpDownloader downloader = new NbpHttpDownloader();
@@ -116,7 +116,7 @@ public class HttpDownloaderTestSuite {
 		downloader.get(Currency.EURO, LocalDate.MAX);
 
 		// Then
-		verify(converterMock).convertCurrencyResponse(testBody);
+		verify(converterMock).convertCurrencyResponse(body);
 	}
 
 	@Test

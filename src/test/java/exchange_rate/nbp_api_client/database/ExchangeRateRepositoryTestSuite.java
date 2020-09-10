@@ -58,10 +58,10 @@ public class ExchangeRateRepositoryTestSuite {
 		// Given
 		LocalDate date = LocalDate.of(1, 1, 1);
 		Currency currency = Currency.EURO;
-		BigDecimal testRate = new BigDecimal("2.14");
-		ExchangeRate exchangeRate = new ExchangeRate(date, currency, testRate);
+		BigDecimal rate = new BigDecimal("2.14");
+		ExchangeRate exchangeRate = new ExchangeRate(date, currency, rate);
 		repository.save(exchangeRate);
-		BigDecimal updatedRate = testRate.multiply(new BigDecimal(100));
+		BigDecimal updatedRate = rate.multiply(new BigDecimal(100));
 
 		// When
 		exchangeRate.setRate(updatedRate);
