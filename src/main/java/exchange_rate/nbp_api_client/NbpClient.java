@@ -22,8 +22,8 @@ public class NbpClient {
 		}
 
 		@Override
-		public ExchangeRate getOrNull(Currency currency, Date date) {
-			return null;
+		public ExchangeRate get(Currency currency, Date date) {
+			throw new NotFoundException();
 		}
 	};
 
@@ -36,37 +36,33 @@ public class NbpClient {
 	}
 
 	public ExchangeRate requestActualExchangeRate(Currency currency) {
-		ExchangeRate result;
-		result = cache.getOrNull(currency, new Date());
-		if (result != null) {
-			return result;
+		try {
+			return cache.get(currency, new Date());
+		} catch (NotFoundException e) {
+			ExchangeRate exchangeRate = downloader.get(currency);
+			cache.saveOrUpdateIfExists(exchangeRate);
+			return exchangeRate;
 		}
-
-		result = downloader.get(currency);
-		cache.saveOrUpdateIfExists(result);
-		return result;
 	}
 
 	public ExchangeRate requestExchangeRate(Currency currency, Date date) {
-
-		ExchangeRate result;
-		result = cache.getOrNull(currency, date);
-		if (result != null) {
-			return result;
-		}
-
 		LocalDateTime dateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
 
 		int counter = 0;
 		while (counter < 5) {
+			Date requestDate = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
 			try {
-				Date requestDate = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
-				result = downloader.get(currency, requestDate);
-				cache.saveOrUpdateIfExists(result);
-				return result;
-			} catch (NotFoundException e) {
-				counter++;
-				dateTime = dateTime.minusDays(1);
+				return cache.get(currency, date);
+			} catch (NotFoundException ex) {
+				try {
+					ExchangeRate result;
+					result = downloader.get(currency, requestDate);
+					cache.saveOrUpdateIfExists(result);
+					return result;
+				} catch (NotFoundException e) {
+					counter++;
+					dateTime = dateTime.minusDays(1);
+				}
 			}
 		}
 

@@ -1,6 +1,6 @@
-package exchange_rate.nbp_api_client.database.exchange_rate.mapper;
+package exchange_rate.nbp_api_client.database.mapper;
 
-import exchange_rate.nbp_api_client.database.exchange_rate.entity.ExchangeRateEntity;
+import exchange_rate.nbp_api_client.database.entity.ExchangeRateEntity;
 import exchange_rate.nbp_api_client.dto.ExchangeRate;
 
 public class ExchangeRateEntityMapper {

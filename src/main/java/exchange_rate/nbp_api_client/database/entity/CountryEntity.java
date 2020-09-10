@@ -1,4 +1,4 @@
-package exchange_rate.nbp_api_client.country.database.entity;
+package exchange_rate.nbp_api_client.database.entity;
 
 import java.util.Set;
 
@@ -13,11 +13,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.Table;
 
 import exchange_rate.nbp_api_client.CountryName;
 import exchange_rate.nbp_api_client.Currency;
 
-@Entity(name = "country")
+@Entity()
+@Table(name = "")
 public class CountryEntity {
 
 	public CountryEntity() {

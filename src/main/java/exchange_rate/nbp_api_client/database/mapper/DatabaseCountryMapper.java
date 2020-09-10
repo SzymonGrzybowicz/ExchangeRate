@@ -1,6 +1,6 @@
-package exchange_rate.nbp_api_client.country.database.mapper;
+package exchange_rate.nbp_api_client.database.mapper;
 
-import exchange_rate.nbp_api_client.country.database.entity.CountryEntity;
+import exchange_rate.nbp_api_client.database.entity.CountryEntity;
 import exchange_rate.nbp_api_client.dto.Country;
 
 public class DatabaseCountryMapper {

@@ -7,7 +7,7 @@ import exchange_rate.nbp_api_client.dto.ExchangeRate;
 
 public interface Cache {
 
-	ExchangeRate getOrNull(Currency currency, Date date);
+	ExchangeRate get(Currency currency, Date date);
 
 	void saveOrUpdateIfExists(ExchangeRate exchangeRate);
 }

@@ -4,24 +4,24 @@ import java.util.Date;
 
 import exchange_rate.nbp_api_client.Currency;
 import exchange_rate.nbp_api_client.cache.Cache;
-import exchange_rate.nbp_api_client.database.exception.DatabaseException;
-import exchange_rate.nbp_api_client.database.exchange_rate.ExchangeRateRepository;
 import exchange_rate.nbp_api_client.dto.ExchangeRate;
+import exchange_rate.nbp_api_client.exception.unchecked.BadRequestException;
+import exchange_rate.nbp_api_client.repository.ExchangeRateRepository;
 
 public class DatabaseCache implements Cache {
 
 	private ExchangeRateRepository repository = new ExchangeRateRepository();
 
 	@Override
-	public ExchangeRate getOrNull(Currency currency, Date date) {
-		return repository.getOrNull(currency, date);
+	public ExchangeRate get(Currency currency, Date date) {
+		return repository.get(currency, date);
 	}
 
 	@Override
 	public void saveOrUpdateIfExists(ExchangeRate exchangeRate) {
 		try {
 			repository.save(exchangeRate);
-		} catch (DatabaseException e) {
+		} catch (BadRequestException e) {
 			repository.update(exchangeRate);
 		}
 	}

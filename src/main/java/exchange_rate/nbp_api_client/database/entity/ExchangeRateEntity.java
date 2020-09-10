@@ -1,4 +1,4 @@
-package exchange_rate.nbp_api_client.database.exchange_rate.entity;
+package exchange_rate.nbp_api_client.database.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -11,29 +11,41 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
+
 import exchange_rate.nbp_api_client.Currency;
 
-@Entity(name = "exchange_rate")
+@NamedQueries({
+		@NamedQuery(name = ExchangeRateEntity.QUERY_GET_BY_CURRENCY_AND_DATE, query = "FROM ExchangeRateEntity e WHERE e.date = :"
+				+ ExchangeRateEntity.PARAMETER_DATE + " AND e.currency = :" + ExchangeRateEntity.PARAMETER_CURRENCY) })
+@Entity
+@Table(name = "exchange_rate")
 public class ExchangeRateEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	public static final String QUERY_GET_BY_CURRENCY_AND_DATE = "ExchangeRate.get_byCurrencyAndDate";
+	public static final String PARAMETER_DATE = "date";
+	public static final String PARAMETER_CURRENCY = "currency";
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "id")
+	@Column
 	private long id;
 
-	@Column(name = "rate", precision = 12, scale = 6)
+	@Column(precision = 12, scale = 6)
 	private BigDecimal rate;
 
-	@Column(name = "date")
+	@Column
 	@Temporal(TemporalType.DATE)
 	private Date date;
 
-	@Column(name = "currency")
+	@Column
 	@Enumerated(EnumType.STRING)
 	private Currency currency;
 

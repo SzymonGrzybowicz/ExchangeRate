@@ -1,4 +1,4 @@
-package exchange_rate.nbp_api_client.country.database;
+package exchange_rate.nbp_api_client.repository;
 
 import javax.persistence.NoResultException;
 
@@ -7,23 +7,16 @@ import org.hibernate.query.Query;
 import org.hibernate.type.StringType;
 
 import exchange_rate.nbp_api_client.CountryName;
-import exchange_rate.nbp_api_client.country.CountryRepository;
-import exchange_rate.nbp_api_client.country.database.entity.CountryEntity;
-import exchange_rate.nbp_api_client.country.database.mapper.DatabaseCountryMapper;
+import exchange_rate.nbp_api_client.database.entity.CountryEntity;
 import exchange_rate.nbp_api_client.database.exception.DatabaseException;
+import exchange_rate.nbp_api_client.database.mapper.DatabaseCountryMapper;
 import exchange_rate.nbp_api_client.database.util.HibernateUtil;
 import exchange_rate.nbp_api_client.dto.Country;
 
-public class DatabaseCountryRepository implements CountryRepository {
+public class CountryRepository {
 
 	private DatabaseCountryMapper mapper = new DatabaseCountryMapper();
 
-	@Override
-	public void finalize() {
-		HibernateUtil.shutdown();
-	}
-
-	@Override
 	public Country get(CountryName countryName) {
 		CountryEntity entity = readEntity(countryName);
 		if (entity != null) {
@@ -32,7 +25,6 @@ public class DatabaseCountryRepository implements CountryRepository {
 		return null;
 	}
 
-	@Override
 	public void save(Country country) {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		CountryEntity entity = readEntity(country.getName());
@@ -46,7 +38,6 @@ public class DatabaseCountryRepository implements CountryRepository {
 		session.close();
 	}
 
-	@Override
 	public void update(Country country) {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		CountryEntity entity = readEntity(country.getName());
@@ -60,7 +51,6 @@ public class DatabaseCountryRepository implements CountryRepository {
 		session.close();
 	}
 
-	@Override
 	public void delete(Country country) {
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		CountryEntity entity = readEntity(country.getName());

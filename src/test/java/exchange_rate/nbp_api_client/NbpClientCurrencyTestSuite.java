@@ -45,7 +45,7 @@ public class NbpClientCurrencyTestSuite {
 		BigDecimal exceptedRate = new BigDecimal("321.321");
 		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
 
-		when(cacheMock.getOrNull(eq(exceptedCurrency), any())).thenReturn(exceptedResult);
+		when(cacheMock.get(eq(exceptedCurrency), any())).thenReturn(exceptedResult);
 
 		NbpClient client = new NbpClient(downloaderMock);
 		client.setCache(cacheMock);
@@ -59,14 +59,14 @@ public class NbpClientCurrencyTestSuite {
 	}
 
 	@Test
-	public void test_requestActualExchangeRate_nullFromCache() {
+	public void test_requestActualExchangeRate_noObjectInCache() {
 		// Given
 		Date exceptedDate = new Date(1234);
 		Currency exceptedCurrency = Currency.EURO;
 		BigDecimal exceptedRate = new BigDecimal("321.321");
 		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
 
-		when(cacheMock.getOrNull(eq(exceptedCurrency), any())).thenReturn(null);
+		when(cacheMock.get(eq(exceptedCurrency), any())).thenThrow(NotFoundException.class);
 		when(downloaderMock.get(eq(exceptedCurrency))).thenReturn(exceptedResult);
 
 		NbpClient client = new NbpClient(downloaderMock);
@@ -106,7 +106,7 @@ public class NbpClientCurrencyTestSuite {
 		BigDecimal exceptedRate = new BigDecimal("321.321");
 		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
 
-		when(cacheMock.getOrNull(eq(exceptedCurrency), eq(exceptedDate))).thenReturn(exceptedResult);
+		when(cacheMock.get(eq(exceptedCurrency), eq(exceptedDate))).thenReturn(exceptedResult);
 
 		NbpClient client = new NbpClient(downloaderMock);
 		client.setCache(cacheMock);
@@ -120,14 +120,14 @@ public class NbpClientCurrencyTestSuite {
 	}
 
 	@Test
-	public void test_requestExchangeRate_nullFromCache() {
+	public void test_requestExchangeRate_noObjectInCache() {
 		// Given
 		Date exceptedDate = new Date(1234);
 		Currency exceptedCurrency = Currency.EURO;
 		BigDecimal exceptedRate = new BigDecimal("321.321");
 		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
 
-		when(cacheMock.getOrNull(eq(exceptedCurrency), eq(exceptedDate))).thenReturn(null);
+		when(cacheMock.get(eq(exceptedCurrency), eq(exceptedDate))).thenThrow(NotFoundException.class);
 		when(downloaderMock.get(eq(exceptedCurrency), eq(exceptedDate))).thenReturn(exceptedResult);
 
 		NbpClient client = new NbpClient(downloaderMock);
@@ -166,20 +166,20 @@ public class NbpClientCurrencyTestSuite {
 		Date holiday = df.parse("2020-03-10"); // before that day was three days without rate publication
 		Date dayWithRate = df.parse("2020-03-06");
 
-		Currency exceptedCurrency = Currency.EURO;
-		BigDecimal exceptedRate = new BigDecimal("321.321");
-		ExchangeRate exceptedResult = new ExchangeRate(dayWithRate, exceptedCurrency, exceptedRate);
+		Currency currency = Currency.EURO;
+		BigDecimal rate = new BigDecimal("321.321");
+		ExchangeRate exceptedResult = new ExchangeRate(dayWithRate, currency, rate);
 
-		when(downloaderMock.get(eq(exceptedCurrency), any())).thenThrow(NotFoundException.class);
-		when(downloaderMock.get(eq(exceptedCurrency), eq(dayWithRate))).thenReturn(exceptedResult);
+		when(downloaderMock.get(eq(currency), any())).thenThrow(NotFoundException.class);
+		when(downloaderMock.get(eq(currency), eq(dayWithRate))).thenReturn(exceptedResult);
 
 		NbpClient client = new NbpClient(downloaderMock);
 
 		// When
-		ExchangeRate result = client.requestExchangeRate(exceptedCurrency, holiday);
+		ExchangeRate result = client.requestExchangeRate(currency, holiday);
 
 		// Then
-		verify(downloaderMock, times(5)).get(eq(exceptedCurrency), any());
+		verify(downloaderMock, times(5)).get(eq(currency), any());
 		assertThat(result).isEqualTo(exceptedResult);
 	}
 

@@ -28,6 +28,7 @@ import exchange_rate.nbp_api_client.downloader.http.converter.Converter;
 import exchange_rate.nbp_api_client.downloader.http.converter.Converter.DataFormat;
 import exchange_rate.nbp_api_client.exception.checked.NotFoundException;
 import exchange_rate.nbp_api_client.exception.unchecked.BadRequestException;
+import exchange_rate.nbp_api_client.exception.unchecked.ConnectionException;
 
 public class HttpDownloaderTestSuite {
 
@@ -85,6 +86,22 @@ public class HttpDownloaderTestSuite {
 	}
 
 	@Test
+	public void test_getActual_IOException() throws IOException {
+		// Given
+		Call callMock = Mockito.mock(Call.class);
+		when(callMock.execute()).thenThrow(IOException.class);
+
+		OkHttpClient clientMock = Mockito.mock(OkHttpClient.class);
+		when(clientMock.newCall(any())).thenReturn(callMock);
+
+		NbpHttpDownloader downloader = new NbpHttpDownloader();
+		downloader.setHttpClient(clientMock);
+
+		// When && Then
+		assertThrows(ConnectionException.class, () -> downloader.get(Currency.EURO));
+	}
+
+	@Test
 	public void test_getForDate_responseCode200() throws IOException {
 		// Given
 		String testBody = "testBody";
@@ -126,6 +143,22 @@ public class HttpDownloaderTestSuite {
 
 		// When && Then
 		assertThrows(NotFoundException.class, () -> downloader.get(Currency.EURO, new Date()));
+	}
+
+	@Test
+	public void test_getForDate_IOException() throws IOException {
+		// Given
+		Call callMock = Mockito.mock(Call.class);
+		when(callMock.execute()).thenThrow(IOException.class);
+
+		OkHttpClient clientMock = Mockito.mock(OkHttpClient.class);
+		when(clientMock.newCall(any())).thenReturn(callMock);
+
+		NbpHttpDownloader downloader = new NbpHttpDownloader();
+		downloader.setHttpClient(clientMock);
+
+		// When && Then
+		assertThrows(ConnectionException.class, () -> downloader.get(Currency.EURO, new Date()));
 	}
 
 	private Response mockResponse(int code, String body) {
