@@ -42,13 +42,14 @@ public class NbpHttpDownloader implements Downloader {
 			case 200:
 				return converter.convertCurrencyResponse(response.body().string());
 			case 404:
-				throw new NotFoundException();
+				throw new NotFoundException("Cannot find actual exchange rate for currency: " + currency
+						+ "http response: " + response.toString());
 			default:
-				throw new BadRequestException();
+				throw new BadRequestException("Nbp api response: " + response.toString());
 			}
 
 		} catch (IOException e) {
-			throw new ConnectionException();
+			throw new ConnectionException("Cannot connect to nbp api because of: " + e.toString());
 		}
 	}
 
@@ -62,13 +63,14 @@ public class NbpHttpDownloader implements Downloader {
 			case 200:
 				return converter.convertCurrencyResponse(response.body().string());
 			case 404:
-				throw new NotFoundException();
+				throw new NotFoundException("Cannot find actual exchange rate for currency: " + currency
+						+ "http response: " + response.toString());
 			default:
-				throw new BadRequestException();
+				throw new BadRequestException("Nbp api response: " + response.toString());
 			}
 
 		} catch (IOException e) {
-			throw new ConnectionException();
+			throw new ConnectionException("Cannot connect to nbp api because of: " + e.toString());
 		}
 	}
 
