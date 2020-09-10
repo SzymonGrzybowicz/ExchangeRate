@@ -1,6 +1,6 @@
 package exchange_rate.nbp_api_client.repository;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.NoResultException;
 
@@ -38,7 +38,7 @@ public class ExchangeRateRepository {
 		database.execute(unitOfWork);
 	}
 
-	public ExchangeRate get(Currency currency, Date date) {
+	public ExchangeRate get(Currency currency, LocalDate date) {
 		try {
 			UnitOfWork<ExchangeRateEntity> unitOfWork = (Session session) -> {
 
@@ -85,7 +85,7 @@ public class ExchangeRateRepository {
 		database.execute(unitOfWork);
 	}
 
-	private ExchangeRateEntity read(Currency currency, Date date, Session session) {
+	private ExchangeRateEntity read(Currency currency, LocalDate date, Session session) {
 		Query<ExchangeRateEntity> query = session
 				.createNamedQuery(ExchangeRateEntity.QUERY_GET_BY_CURRENCY_AND_DATE, ExchangeRateEntity.class)
 				.setParameter(ExchangeRateEntity.PARAMETER_CURRENCY, currency)

@@ -6,7 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -113,7 +113,7 @@ public class HttpDownloaderTestSuite {
 		downloader.setHttpClient(clientMock);
 
 		// When
-		downloader.get(Currency.EURO, new Date());
+		downloader.get(Currency.EURO, LocalDate.MAX);
 
 		// Then
 		verify(converterMock).convertCurrencyResponse(testBody);
@@ -129,7 +129,7 @@ public class HttpDownloaderTestSuite {
 		downloader.setHttpClient(clientMock);
 
 		// When && Then
-		assertThrows(BadRequestException.class, () -> downloader.get(Currency.EURO, new Date()));
+		assertThrows(BadRequestException.class, () -> downloader.get(Currency.EURO, LocalDate.MAX));
 	}
 
 	@Test
@@ -142,7 +142,7 @@ public class HttpDownloaderTestSuite {
 		downloader.setHttpClient(clientMock);
 
 		// When && Then
-		assertThrows(NotFoundException.class, () -> downloader.get(Currency.EURO, new Date()));
+		assertThrows(NotFoundException.class, () -> downloader.get(Currency.EURO, LocalDate.MAX));
 	}
 
 	@Test
@@ -158,7 +158,7 @@ public class HttpDownloaderTestSuite {
 		downloader.setHttpClient(clientMock);
 
 		// When && Then
-		assertThrows(ConnectionException.class, () -> downloader.get(Currency.EURO, new Date()));
+		assertThrows(ConnectionException.class, () -> downloader.get(Currency.EURO, LocalDate.MAX));
 	}
 
 	private Response mockResponse(int code, String body) {

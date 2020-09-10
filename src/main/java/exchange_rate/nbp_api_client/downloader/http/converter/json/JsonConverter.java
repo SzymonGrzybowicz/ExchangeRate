@@ -1,10 +1,9 @@
 package exchange_rate.nbp_api_client.downloader.http.converter.json;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -60,13 +59,13 @@ public class JsonConverter implements Converter {
 				throw new ConvertResponseException(
 						"Cannot convert response, cannot find currency by alphabetic code. Response: " + response);
 
-			Date date = new SimpleDateFormat("yyyy-MM-dd").parse(rate.getEffectiveDate());
+			LocalDate date = LocalDate.parse(rate.getEffectiveDate());
 
 			return new ExchangeRate(date, currency, new BigDecimal(rate.getMid()));
 		} catch (JsonSyntaxException e) {
 			throw new ResponseSyntaxException("Cannot convert response. Wrong Json syntax. Response: " + response
 					+ "gson exception: " + e.toString());
-		} catch (ParseException e) {
+		} catch (DateTimeParseException e) {
 			throw new DataParseException("Cannot convert response. Wrong data format. Response: " + response);
 		}
 	}
@@ -105,7 +104,7 @@ public class JsonConverter implements Converter {
 				if (currency == null)
 					continue;
 
-				Date date = new SimpleDateFormat("yyyy-MM-dd").parse(value.getEffectiveDate());
+				LocalDate date = LocalDate.parse(value.getEffectiveDate());
 				result.add(new ExchangeRate(date, currency, new BigDecimal(rate.getMid())));
 			}
 
@@ -116,7 +115,7 @@ public class JsonConverter implements Converter {
 		} catch (JsonSyntaxException e) {
 			throw new ResponseSyntaxException("Cannot convert response. Wrong Json syntax. Response: " + response
 					+ "gson exception: " + e.toString());
-		} catch (ParseException e) {
+		} catch (DateTimeParseException e) {
 			throw new DataParseException("Cannot convert response. Wrong data format. Response: " + response);
 		}
 	}

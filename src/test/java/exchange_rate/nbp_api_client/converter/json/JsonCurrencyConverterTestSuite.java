@@ -4,10 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 
 import exchange_rate.nbp_api_client.Currency;
@@ -20,8 +18,7 @@ import exchange_rate.nbp_api_client.exception.unchecked.ResponseSyntaxException;
 
 public class JsonCurrencyConverterTestSuite {
 
-	private final Date testDate = new Date(1234);
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	private final LocalDate testDate = LocalDate.of(1, 1, 1);
 	private final Currency testCurrency = Currency.EURO;
 	private final BigDecimal testRate = new BigDecimal("4.4181");
 	// @formatter:off
@@ -34,7 +31,7 @@ public class JsonCurrencyConverterTestSuite {
 				"[" +
 					"{" +
 						"\"no\":\"172/A/NBP/2020\"," +
-						"\"effectiveDate\":\"" + dateFormat.format(testDate) + "\"," +
+						"\"effectiveDate\":\"" + testDate + "\"," +
 						"\"mid\":" + testRate + 
 					"}" +
 				"]" +
@@ -49,7 +46,7 @@ public class JsonCurrencyConverterTestSuite {
 				"[" +
 					"{" +
 						"\"no\":\"172/A/NBP/2020\"," +
-						"\"effectiveDate\":\"" + dateFormat.format(testDate) + "\"," +
+						"\"effectiveDate\":\"" + testDate + "\"," +
 						"\"mid\":" + testRate + 
 					"}" +
 				"]" +
@@ -109,12 +106,12 @@ public class JsonCurrencyConverterTestSuite {
 					"[" +
 						"{" +
 							"\"no\":\"172/A/NBP/2020\"," +
-							"\"effectiveDate\":\"" + dateFormat.format(testDate) + "\"," +
+							"\"effectiveDate\":\"" + testDate + "\"," +
 							"\"mid\":" + testRate + 
 						"}," +
 						"{" +
 							"\"no\":\"172/A/NBP/2020\"," +
-							"\"effectiveDate\":\"" + dateFormat.format(testDate) + "\"," +
+							"\"effectiveDate\":\"" + testDate + "\"," +
 							"\"mid\":" + testRate +
 						"}" +
 					"]" +
@@ -131,7 +128,7 @@ public class JsonCurrencyConverterTestSuite {
 
 		// Then
 		assertThat(resultRate.getCurrency()).isEqualTo(Currency.EURO);
-		assertThat(DateUtils.isSameDay(resultRate.getDate(), testDate)).isTrue();
+		assertThat(resultRate.getDate()).isEqualTo(testDate);
 		assertThat(resultRate.getRate()).isEqualTo(testRate);
 	}
 

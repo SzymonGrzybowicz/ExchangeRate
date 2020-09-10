@@ -4,12 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 
 import exchange_rate.nbp_api_client.Currency;
@@ -22,8 +20,7 @@ import exchange_rate.nbp_api_client.exception.unchecked.ResponseSyntaxException;
 
 public class JsonTableConverterTestSuite {
 
-	private final Date testDate = new Date(1234);
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	private final LocalDate testDate = LocalDate.of(1, 1, 1);
 	private final Currency testCurrency = Currency.EURO;
 	private final BigDecimal testRate = new BigDecimal("4.4181");
 	//@formatter:off
@@ -32,7 +29,7 @@ public class JsonTableConverterTestSuite {
 				   "{" +
 				      "\"table\":\"A\"," +
 				      "\"no\":\"174/A/NBP/2020\"," +
-				      "\"effectiveDate\":\"" + dateFormat.format(testDate) + "\"," +
+				      "\"effectiveDate\":\"" + testDate + "\"," +
 				      "\"rates\":" +
 			    	  "[" +
 						"{" +
@@ -64,7 +61,7 @@ public class JsonTableConverterTestSuite {
 				   "{" +
 				      "\"table\":\"A\"," +
 				      "\"no\":\"174/A/NBP/2020\"," +
-				      "\"effectiveDate\":\"" + dateFormat.format(testDate) + "\"," +
+				      "\"effectiveDate\":\"" + testDate + "\"," +
 				      "\"rates\":" +
 			    	  "[" +
 						"{" +
@@ -77,7 +74,7 @@ public class JsonTableConverterTestSuite {
 				   "{" +
 				      "\"table\":\"A\"," +
 				      "\"no\":\"174/A/NBP/2020\"," +
-				      "\"effectiveDate\":\"" + dateFormat.format(testDate) + "\"," +
+				      "\"effectiveDate\":\"" + testDate + "\"," +
 				      "\"rates\":" +
 			    	  "[" +
 						"{" +
@@ -94,7 +91,7 @@ public class JsonTableConverterTestSuite {
 					"{" +
 					      "\"table\":\"A\"," +
 					      "\"no\":\"174/A/NBP/2020\"," +
-					      "\"effectiveDate\":\"" + dateFormat.format(testDate) + "\"" +
+					      "\"effectiveDate\":\"" + testDate + "\"" +
 				     "}" +
 				 "]"; 
 		
@@ -103,7 +100,7 @@ public class JsonTableConverterTestSuite {
 					"{" +
 					      "\"table\":\"A\"," +
 					      "\"no\":\"174/A/NBP/2020\"," +
-					      "\"effectiveDate\":\"" + dateFormat.format(testDate) + "\"," +
+					      "\"effectiveDate\":\"" + testDate + "\"," +
 					      "\"rates\":[]" + //wrong
 				     "}" +
 				 "]"; 
@@ -130,7 +127,7 @@ public class JsonTableConverterTestSuite {
 				   "{" +
 				      "\"table\":\"A\"," +
 				      "\"no\":\"174/A/NBP/2020\"," +
-				      "\"effectiveDate\":\"" + dateFormat.format(testDate) + "\"," +
+				      "\"effectiveDate\":\"" + testDate + "\"," +
 				      "\"rates\":" +
 			    	  "[" +
 						"{" +
@@ -181,7 +178,7 @@ public class JsonTableConverterTestSuite {
 
 		// Then
 		assertThat(result).hasSize(3);
-		assertThat(result).allMatch(e -> DateUtils.isSameDay(e.getDate(), testDate));
+		assertThat(result).allMatch(e -> e.getDate().equals(testDate));
 
 		List<ExchangeRate> testCurrencyRates = result.stream().filter(e -> e.getCurrency().equals(testCurrency))
 				.collect(Collectors.toList());

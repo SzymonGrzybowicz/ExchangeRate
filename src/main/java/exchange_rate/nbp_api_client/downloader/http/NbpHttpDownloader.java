@@ -1,8 +1,7 @@
 package exchange_rate.nbp_api_client.downloader.http;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -54,7 +53,7 @@ public class NbpHttpDownloader implements Downloader {
 	}
 
 	@Override
-	public ExchangeRate get(Currency currency, Date date) {
+	public ExchangeRate get(Currency currency, LocalDate date) {
 		Request request = new Request.Builder().url(getUrl(currency, date)).build();
 		try {
 			Response response = client.newCall(request).execute();
@@ -78,9 +77,8 @@ public class NbpHttpDownloader implements Downloader {
 		return CURRENCY_URL + "/" + currency.getAlphabeticCode() + getUrlPostfix();
 	}
 
-	private String getUrl(Currency currency, Date date) {
-		return CURRENCY_URL + "/" + currency.getAlphabeticCode() + "/" + new SimpleDateFormat("yyyy-MM-dd").format(date)
-				+ getUrlPostfix();
+	private String getUrl(Currency currency, LocalDate date) {
+		return CURRENCY_URL + "/" + currency.getAlphabeticCode() + "/" + date + getUrlPostfix();
 	}
 
 	private String getUrlPostfix() {

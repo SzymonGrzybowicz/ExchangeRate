@@ -11,8 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +39,7 @@ public class NbpClientCurrencyTestSuite {
 	@Test
 	public void test_requestActualExchangeRate_objectFromCache() {
 		// Given
-		Date exceptedDate = new Date(1234);
+		LocalDate exceptedDate = LocalDate.of(1, 1, 1);
 		Currency exceptedCurrency = Currency.EURO;
 		BigDecimal exceptedRate = new BigDecimal("321.321");
 		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
@@ -61,7 +60,7 @@ public class NbpClientCurrencyTestSuite {
 	@Test
 	public void test_requestActualExchangeRate_noObjectInCache() {
 		// Given
-		Date exceptedDate = new Date(1234);
+		LocalDate exceptedDate = LocalDate.of(1, 1, 1);
 		Currency exceptedCurrency = Currency.EURO;
 		BigDecimal exceptedRate = new BigDecimal("321.321");
 		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
@@ -82,7 +81,7 @@ public class NbpClientCurrencyTestSuite {
 	@Test
 	public void test_requestActualExchangeRate_withoutCache() {
 		// Given
-		Date exceptedDate = new Date(1234);
+		LocalDate exceptedDate = LocalDate.of(1, 1, 1);
 		Currency exceptedCurrency = Currency.EURO;
 		BigDecimal exceptedRate = new BigDecimal("321.321");
 		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
@@ -101,7 +100,7 @@ public class NbpClientCurrencyTestSuite {
 	@Test
 	public void test_requestExchangeRate_objectFromCache() {
 		// Given
-		Date exceptedDate = new Date(1234);
+		LocalDate exceptedDate = LocalDate.of(1, 1, 1);
 		Currency exceptedCurrency = Currency.EURO;
 		BigDecimal exceptedRate = new BigDecimal("321.321");
 		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
@@ -122,7 +121,7 @@ public class NbpClientCurrencyTestSuite {
 	@Test
 	public void test_requestExchangeRate_noObjectInCache() {
 		// Given
-		Date exceptedDate = new Date(1234);
+		LocalDate exceptedDate = LocalDate.of(1, 1, 1);
 		Currency exceptedCurrency = Currency.EURO;
 		BigDecimal exceptedRate = new BigDecimal("321.321");
 		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
@@ -143,7 +142,7 @@ public class NbpClientCurrencyTestSuite {
 	@Test
 	public void test_requestExchangeRate_withoutCache() {
 		// Given
-		Date exceptedDate = new Date(1234);
+		LocalDate exceptedDate = LocalDate.of(1, 1, 1);
 		Currency exceptedCurrency = Currency.EURO;
 		BigDecimal exceptedRate = new BigDecimal("321.321");
 		ExchangeRate exceptedResult = new ExchangeRate(exceptedDate, exceptedCurrency, exceptedRate);
@@ -162,9 +161,8 @@ public class NbpClientCurrencyTestSuite {
 	@Test
 	public void test_requestExchangeRate_fourDayHolidayRequest() throws ParseException {
 		// Given
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-		Date holiday = df.parse("2020-03-10"); // before that day was three days without rate publication
-		Date dayWithRate = df.parse("2020-03-06");
+		LocalDate holiday = LocalDate.parse("2020-03-10"); // before that day was three days without rate publication
+		LocalDate dayWithRate = LocalDate.parse("2020-03-06");
 
 		Currency currency = Currency.EURO;
 		BigDecimal rate = new BigDecimal("321.321");
@@ -186,9 +184,8 @@ public class NbpClientCurrencyTestSuite {
 	@Test
 	public void test_requestExchangeRate_fiveDayHolidayRequest() throws ParseException {
 		// Given
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-		Date holiday = df.parse("2020-03-10"); // before that day was four days without rate publication
-		Date dayWithRate = df.parse("2020-03-05");
+		LocalDate holiday = LocalDate.parse("2020-03-10"); // before that day was four days without rate publication
+		LocalDate dayWithRate = LocalDate.parse("2020-03-05");
 
 		Currency exceptedCurrency = Currency.EURO;
 		BigDecimal exceptedRate = new BigDecimal("321.321");

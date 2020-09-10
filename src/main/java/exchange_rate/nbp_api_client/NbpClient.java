@@ -1,9 +1,7 @@
 package exchange_rate.nbp_api_client;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import exchange_rate.nbp_api_client.cache.Cache;
@@ -22,7 +20,7 @@ public class NbpClient {
 		}
 
 		@Override
-		public ExchangeRate get(Currency currency, Date date) {
+		public ExchangeRate get(Currency currency, LocalDate date) {
 			throw new NotFoundException();
 		}
 	};
@@ -37,7 +35,7 @@ public class NbpClient {
 
 	public ExchangeRate requestActualExchangeRate(Currency currency) {
 		try {
-			return cache.get(currency, new Date());
+			return cache.get(currency, LocalDate.now());
 		} catch (NotFoundException e) {
 			ExchangeRate exchangeRate = downloader.get(currency);
 			cache.saveOrUpdateIfExists(exchangeRate);
@@ -45,12 +43,11 @@ public class NbpClient {
 		}
 	}
 
-	public ExchangeRate requestExchangeRate(Currency currency, Date date) {
-		LocalDateTime dateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+	public ExchangeRate requestExchangeRate(Currency currency, LocalDate date) {
 
+		LocalDate requestDate = date;
 		int counter = 0;
 		while (counter < 5) {
-			Date requestDate = Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
 			try {
 				return cache.get(currency, date);
 			} catch (NotFoundException ex) {
@@ -61,7 +58,7 @@ public class NbpClient {
 					return result;
 				} catch (NotFoundException e) {
 					counter++;
-					dateTime = dateTime.minusDays(1);
+					requestDate = requestDate.minusDays(1);
 				}
 			}
 		}
@@ -76,7 +73,7 @@ public class NbpClient {
 		return result;
 	}
 
-	public List<ExchangeRate> requestExchangeRate(List<Currency> currencies, Date date) {
+	public List<ExchangeRate> requestExchangeRate(List<Currency> currencies, LocalDate date) {
 		List<ExchangeRate> result = new ArrayList<>();
 		currencies.forEach(c -> result.add(requestExchangeRate(c, date)));
 		return result;

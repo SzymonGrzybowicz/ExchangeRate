@@ -1,25 +1,23 @@
 package exchange_rate.nbp_api_client.dto;
 
 import java.math.BigDecimal;
-import java.util.Date;
-
-import org.apache.commons.lang3.time.DateUtils;
+import java.time.LocalDate;
 
 import exchange_rate.nbp_api_client.Currency;
 
 public class ExchangeRate {
 
-	private Date date;
+	private LocalDate date;
 	private Currency currency;
 	private BigDecimal rate;
 
-	public ExchangeRate(Date date, Currency currency, BigDecimal rate) {
+	public ExchangeRate(LocalDate date, Currency currency, BigDecimal rate) {
 		this.date = date;
 		this.currency = currency;
 		this.rate = rate;
 	}
 
-	public Date getDate() {
+	public LocalDate getDate() {
 		return date;
 	}
 
@@ -31,7 +29,7 @@ public class ExchangeRate {
 		return rate;
 	}
 
-	public void setDate(Date date) {
+	public void setDate(LocalDate date) {
 		this.date = date;
 	}
 
@@ -67,7 +65,7 @@ public class ExchangeRate {
 		if (date == null) {
 			if (other.date != null)
 				return false;
-		} else if (!DateUtils.isSameDay(date, other.date))
+		} else if (!date.isEqual(other.date))
 			return false;
 		if (rate == null) {
 			if (other.rate != null)

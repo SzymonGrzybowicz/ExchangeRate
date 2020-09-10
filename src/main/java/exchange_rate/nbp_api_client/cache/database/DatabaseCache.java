@@ -1,6 +1,6 @@
 package exchange_rate.nbp_api_client.cache.database;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import exchange_rate.nbp_api_client.Currency;
 import exchange_rate.nbp_api_client.cache.Cache;
@@ -13,7 +13,7 @@ public class DatabaseCache implements Cache {
 	private ExchangeRateRepository repository = new ExchangeRateRepository();
 
 	@Override
-	public ExchangeRate get(Currency currency, Date date) {
+	public ExchangeRate get(Currency currency, LocalDate date) {
 		return repository.get(currency, date);
 	}
 

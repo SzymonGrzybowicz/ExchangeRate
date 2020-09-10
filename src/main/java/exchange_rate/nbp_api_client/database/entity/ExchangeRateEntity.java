@@ -2,7 +2,7 @@ package exchange_rate.nbp_api_client.database.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,8 +12,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.NamedQueries;
 import org.hibernate.annotations.NamedQuery;
@@ -42,8 +40,7 @@ public class ExchangeRateEntity implements Serializable {
 	private BigDecimal rate;
 
 	@Column
-	@Temporal(TemporalType.DATE)
-	private Date date;
+	private LocalDate date;
 
 	@Column
 	@Enumerated(EnumType.STRING)
@@ -52,7 +49,7 @@ public class ExchangeRateEntity implements Serializable {
 	public ExchangeRateEntity() {
 	}
 
-	public ExchangeRateEntity(BigDecimal rate, Date date, Currency currency) {
+	public ExchangeRateEntity(BigDecimal rate, LocalDate date, Currency currency) {
 		super();
 		this.rate = rate;
 		this.date = date;
@@ -71,7 +68,7 @@ public class ExchangeRateEntity implements Serializable {
 		this.rate = rate;
 	}
 
-	public Date getDate() {
+	public LocalDate getDate() {
 		return date;
 	}
 

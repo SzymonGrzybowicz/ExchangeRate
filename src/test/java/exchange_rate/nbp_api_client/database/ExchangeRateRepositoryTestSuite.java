@@ -4,9 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 
 import exchange_rate.nbp_api_client.Currency;
@@ -21,7 +20,7 @@ public class ExchangeRateRepositoryTestSuite {
 	@Test
 	public void test_saveRead() {
 		// Given
-		Date date = new Date(1111);
+		LocalDate date = LocalDate.of(1, 1, 1);
 		Currency currency = Currency.EURO;
 		BigDecimal rate = new BigDecimal("2.14");
 		ExchangeRate exceptedResult = new ExchangeRate(date, currency, rate);
@@ -41,7 +40,7 @@ public class ExchangeRateRepositoryTestSuite {
 	@Test
 	public void test_delete() {
 		// Given
-		Date date = new Date(1111);
+		LocalDate date = LocalDate.of(1, 1, 1);
 		Currency currency = Currency.EURO;
 		BigDecimal rate = new BigDecimal("2.14");
 		ExchangeRate exchangeRate = new ExchangeRate(date, currency, rate);
@@ -57,7 +56,7 @@ public class ExchangeRateRepositoryTestSuite {
 	@Test
 	public void test_update() {
 		// Given
-		Date date = new Date(1111);
+		LocalDate date = LocalDate.of(1, 1, 1);
 		Currency currency = Currency.EURO;
 		BigDecimal testRate = new BigDecimal("2.14");
 		ExchangeRate exchangeRate = new ExchangeRate(date, currency, testRate);
@@ -72,7 +71,7 @@ public class ExchangeRateRepositoryTestSuite {
 		// Then
 		assertThat(exchangeRate).isNotNull();
 		assertThat(exchangeRate.getRate().doubleValue()).isEqualTo(updatedRate.doubleValue());
-		assertThat(DateUtils.isSameDay(exchangeRate.getDate(), date)).isTrue();
+		assertThat(exchangeRate.getDate()).isEqualTo(date);
 		assertThat(exchangeRate.getCurrency()).isEqualTo(currency);
 
 		// Clean up
