@@ -1,4 +1,4 @@
-package exchange_rate.nbp_api_client.database;
+package exchange_rate.nbp_api_client.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -11,7 +11,6 @@ import org.junit.Test;
 import exchange_rate.nbp_api_client.Currency;
 import exchange_rate.nbp_api_client.dto.ExchangeRate;
 import exchange_rate.nbp_api_client.exception.checked.NotFoundException;
-import exchange_rate.nbp_api_client.repository.ExchangeRateRepository;
 
 public class ExchangeRateRepositoryTestSuite {
 

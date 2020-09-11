@@ -1,5 +1,6 @@
 package exchange_rate.nbp_api_client.database.entity;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -15,12 +16,20 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.NamedQueries;
+import org.hibernate.annotations.NamedQuery;
+
 import exchange_rate.nbp_api_client.CountryName;
 import exchange_rate.nbp_api_client.Currency;
 
-@Entity()
-@Table(name = "")
+@NamedQueries({ @NamedQuery(name = CountryEntity.QUERY_GET_BY_COUNTRY_NAME, query = "FROM CountryEntity WHERE name = :"
+		+ CountryEntity.PARAMETER_NAME) })
+@Entity
+@Table(name = "country")
 public class CountryEntity {
+
+	public static final String QUERY_GET_BY_COUNTRY_NAME = "CountryEntity.get_byCountryName";
+	public static final String PARAMETER_NAME = "name";
 
 	public CountryEntity() {
 	}
@@ -50,10 +59,14 @@ public class CountryEntity {
 	}
 
 	public Set<Currency> getCurrencies() {
-		return currencies;
+		return new HashSet<>(currencies);
 	}
 
-	public void setCurrencies(Set<Currency> currencies) {
-		this.currencies = currencies;
+	public void addCurrency(Currency currency) {
+		currencies.add(currency);
+	}
+
+	public void removeCurrency(Currency currency) {
+		currencies.remove(currency);
 	}
 }

@@ -39,23 +39,18 @@ public class ExchangeRateRepository {
 	}
 
 	public ExchangeRate get(Currency currency, LocalDate date) {
-		try {
-			UnitOfWork<ExchangeRateEntity> unitOfWork = (Session session) -> {
+		UnitOfWork<ExchangeRateEntity> unitOfWork = (Session session) -> {
 
-				Query<ExchangeRateEntity> query = session
-						.createNamedQuery(ExchangeRateEntity.QUERY_GET_BY_CURRENCY_AND_DATE, ExchangeRateEntity.class)
-						.setParameter(ExchangeRateEntity.PARAMETER_CURRENCY, currency)
-						.setParameter(ExchangeRateEntity.PARAMETER_DATE, date);
+			try {
+				return read(currency, date, session);
+			} catch (NoResultException e) {
+				throw new NotFoundException(
+						"Cannot find data for currency: " + currency + " and date: " + date + " in database");
+			}
+		};
 
-				return query.getSingleResult();
-			};
-
-			ExchangeRateEntity result = database.execute(unitOfWork);
-			return mapper.map(result);
-		} catch (NoResultException e) {
-			throw new NotFoundException(
-					"Cannot find data for currency: " + currency + " and date: " + date + " in database");
-		}
+		ExchangeRateEntity result = database.execute(unitOfWork);
+		return mapper.map(result);
 	}
 
 	public void delete(ExchangeRate exchangeRate) {

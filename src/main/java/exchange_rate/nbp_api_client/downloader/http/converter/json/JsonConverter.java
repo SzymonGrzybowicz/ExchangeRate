@@ -72,7 +72,7 @@ public class JsonConverter implements Converter {
 
 	@Override
 	public List<ExchangeRate> convertTableResponse(String response) {
-		List<ExchangeRate> result = new ArrayList();
+		List<ExchangeRate> result = new ArrayList<ExchangeRate>();
 		Gson gson = new Gson();
 		try {
 			TableResponse[] arrayValue = gson.fromJson(response, TableResponse[].class);

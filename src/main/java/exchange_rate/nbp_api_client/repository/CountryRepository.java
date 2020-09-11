@@ -4,76 +4,116 @@ import javax.persistence.NoResultException;
 
 import org.hibernate.Session;
 import org.hibernate.query.Query;
-import org.hibernate.type.StringType;
 
 import exchange_rate.nbp_api_client.CountryName;
+import exchange_rate.nbp_api_client.Currency;
+import exchange_rate.nbp_api_client.database.Database;
+import exchange_rate.nbp_api_client.database.UnitOfWork;
 import exchange_rate.nbp_api_client.database.entity.CountryEntity;
-import exchange_rate.nbp_api_client.database.exception.DatabaseException;
 import exchange_rate.nbp_api_client.database.mapper.DatabaseCountryMapper;
-import exchange_rate.nbp_api_client.database.util.HibernateUtil;
 import exchange_rate.nbp_api_client.dto.Country;
+import exchange_rate.nbp_api_client.exception.checked.NotFoundException;
+import exchange_rate.nbp_api_client.exception.unchecked.BadRequestException;
 
 public class CountryRepository {
 
 	private DatabaseCountryMapper mapper = new DatabaseCountryMapper();
 
+	private Database database = new Database();
+
 	public Country get(CountryName countryName) {
-		CountryEntity entity = readEntity(countryName);
-		if (entity != null) {
-			return mapper.map(entity);
-		}
-		return null;
+		UnitOfWork<CountryEntity> unitOfWork = (Session session) -> {
+			try {
+				return read(countryName, session);
+			} catch (NoResultException e) {
+				throw new NotFoundException("Cannot find data for country name: " + countryName + " in database");
+			}
+		};
+		CountryEntity entity = database.execute(unitOfWork);
+		return mapper.map(entity);
 	}
 
 	public void save(Country country) {
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		CountryEntity entity = readEntity(country.getName());
-		if (entity != null) {
-			throw new DatabaseException("Found data for country name. If you want update use update() method.");
-		}
-		session.beginTransaction();
-		entity = mapper.map(country);
-		session.save(entity);
-		session.getTransaction().commit();
-		session.close();
+		UnitOfWork<Void> unitOfWork = (Session session) -> {
+			try {
+				read(country.getName(), session);
+				throw new BadRequestException(
+						"Cannot save into database, found data for that country name. If you want update use update() method.");
+			} catch (NoResultException e) {
+				session.save(mapper.map(country));
+				return null;
+			}
+		};
+
+		database.execute(unitOfWork);
 	}
 
-	public void update(Country country) {
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		CountryEntity entity = readEntity(country.getName());
-		if (entity == null) {
-			throw new DatabaseException("Data not found. Cannot update. If You want save data use save() method.");
-		}
-		entity.setCurrencies(country.getCurrencies());
-		session.beginTransaction();
-		session.update(entity);
-		session.getTransaction().commit();
-		session.close();
+	public void addCurrency(CountryName countryName, Currency currency) {
+		UnitOfWork<Void> unitOfWork = (Session session) -> {
+			try {
+				CountryEntity entity = read(countryName, session);
+				if (entity.getCurrencies().contains(currency)) {
+					throw new BadRequestException("Cannot add currency: " + currency + "to country with name: "
+							+ countryName + " country already have this currency.");
+				}
+
+				entity.addCurrency(currency);
+				session.update(entity);
+				return null;
+
+			} catch (NoResultException e) {
+				throw new BadRequestException("Cannot add currency: " + currency + "to country with name: "
+						+ countryName + " cannot find country.");
+			}
+		};
+
+		database.execute(unitOfWork);
 	}
 
-	public void delete(Country country) {
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		CountryEntity entity = readEntity(country.getName());
-		if (entity == null) {
-			throw new DatabaseException("Data not found. Cannot delete.");
-		}
-		session.beginTransaction();
-		session.delete(entity);
-		session.getTransaction().commit();
-		session.close();
+	public void removeCurrency(CountryName countryName, Currency currency) {
+		UnitOfWork<Void> unitOfWork = (Session session) -> {
+			try {
+				CountryEntity entity = read(countryName, session);
+				if (!entity.getCurrencies().contains(currency)) {
+					throw new BadRequestException("Cannot remove currency: " + currency + "from country with name: "
+							+ countryName + " country do not have this currency.");
+				}
+
+				entity.removeCurrency(currency);
+				session.update(entity);
+				return null;
+
+			} catch (NoResultException e) {
+				throw new BadRequestException("Cannot remove currency: " + currency + "from country with name: "
+						+ countryName + " cannot find country.");
+			}
+		};
+
+		database.execute(unitOfWork);
 	}
 
-	private CountryEntity readEntity(CountryName countryName) {
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		Query<CountryEntity> query = session.createQuery("FROM country WHERE country_name = :country_name",
-				CountryEntity.class);
-		query.setParameter("country_name", countryName.name(), StringType.INSTANCE);
-		try {
-			return query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		} finally {
-			session.close();
-		}
+	public void delete(CountryName countryName) {
+
+		UnitOfWork<Void> unitOfWork = (Session session) -> {
+			try {
+				CountryEntity entity = read(countryName, session);
+				session.remove(entity);
+				return null;
+			} catch (NoResultException e) {
+				throw new BadRequestException(
+						"Cannot remove country with name: " + countryName + " cannot find country.");
+			}
+		};
+
+		database.execute(unitOfWork);
+	}
+
+	private CountryEntity read(CountryName countryName, Session session) {
+		Query<CountryEntity> query = session
+				.createNamedQuery(CountryEntity.QUERY_GET_BY_COUNTRY_NAME, CountryEntity.class)
+				.setParameter(CountryEntity.PARAMETER_NAME, countryName).setMaxResults(1);
+
+		return query.getSingleResult();
+
 	}
 }
