@@ -16,7 +16,7 @@
         <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
         <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="hibernate.show_sql">true</property>
-        <mapping class="exchange_rate.nbp_api_client.database.entity.ExchangeRateEntity"/>
-        <mapping class="exchange_rate.nbp_api_client.database.entity.CountryEntity"/>
+        <mapping class="exchange_rate.downloader.nbp.database.entity.ExchangeRateEntity"/>
+        <mapping class="exchange_rate.country.database.entity.CountryEntity"/>
     </session-factory>
 </hibernate-configuration>
