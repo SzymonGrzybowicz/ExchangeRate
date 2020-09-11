@@ -2,6 +2,7 @@ package exchange_rate.downloader.nbp.client.http;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -73,12 +74,37 @@ public class HttpNbpClient implements NbpClient {
 		}
 	}
 
+	@Override
+	public List<ExchangeRate> getForPeroid(Currency currency, LocalDate startDate, LocalDate endDate) {
+		Request request = new Request.Builder().url(getPeriodUrl(currency, startDate, endDate)).build();
+		try {
+			Response response = client.newCall(request).execute();
+
+			switch (response.code()) {
+			case 200:
+				return converter.convertCurrencyListResponse(response.body().string());
+			case 404:
+				throw new NotFoundException("Cannot find actual exchange rate for currency: " + currency
+						+ "http response: " + response.toString());
+			default:
+				throw new BadRequestException("Nbp api response: " + response.toString());
+			}
+
+		} catch (IOException e) {
+			throw new ConnectionException("Cannot connect to nbp api because of: " + e.toString());
+		}
+	}
+
 	private String getUrl(Currency currency) {
 		return CURRENCY_URL + "/" + currency.getAlphabeticCode() + getUrlPostfix();
 	}
 
 	private String getUrl(Currency currency, LocalDate date) {
 		return CURRENCY_URL + "/" + currency.getAlphabeticCode() + "/" + date + getUrlPostfix();
+	}
+
+	private String getPeriodUrl(Currency currency, LocalDate startDate, LocalDate endDate) {
+		return CURRENCY_URL + "/" + currency.getAlphabeticCode() + "/" + startDate + "/" + endDate + getUrlPostfix();
 	}
 
 	private String getUrlPostfix() {

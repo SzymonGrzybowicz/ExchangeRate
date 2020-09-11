@@ -10,7 +10,7 @@ public interface Converter {
 
 	ExchangeRate convertCurrencyResponse(String response);
 
-	List<ExchangeRate> convertTableResponse(String response);
+	List<ExchangeRate> convertCurrencyListResponse(String response);
 
 	public enum DataFormat {
 		JSON, XML;

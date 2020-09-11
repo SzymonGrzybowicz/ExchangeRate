@@ -11,7 +11,6 @@ import com.google.gson.JsonSyntaxException;
 
 import exchange_rate.downloader.nbp.client.http.converter.Converter;
 import exchange_rate.downloader.nbp.client.http.converter.json.CurrencyResponse.CurrencyRate;
-import exchange_rate.downloader.nbp.client.http.converter.json.TableResponse.TableRate;
 import exchange_rate.downloader.nbp.exception.unchecked.ConvertResponseException;
 import exchange_rate.downloader.nbp.exception.unchecked.DataParseException;
 import exchange_rate.downloader.nbp.exception.unchecked.ResponseSyntaxException;
@@ -71,46 +70,41 @@ public class JsonConverter implements Converter {
 	}
 
 	@Override
-	public List<ExchangeRate> convertTableResponse(String response) {
-		List<ExchangeRate> result = new ArrayList<ExchangeRate>();
+	public List<ExchangeRate> convertCurrencyListResponse(String response) {
 		Gson gson = new Gson();
 		try {
-			TableResponse[] arrayValue = gson.fromJson(response, TableResponse[].class);
+			CurrencyResponse value = gson.fromJson(response, CurrencyResponse.class);
 
-			if (arrayValue == null)
+			if (value == null)
 				throw new ConvertResponseException("Cannot convert response, response is null. Response: " + response);
 
-			if (arrayValue.length == 0)
-				throw new ConvertResponseException(
-						"Cannot convert response, response is empty array. Response: " + response);
-
-			if (arrayValue.length > 1)
-				throw new ConvertResponseException("Cannot convert response, numerous tables. Response: " + response);
-
-			TableResponse value = arrayValue[0];
-
-			if (value.getRates() == null || value.getEffectiveDate() == null || value.getNo() == null
-					|| value.getTable() == null)
+			if (value.getRates() == null || value.getTable() == null || value.getCode() == null
+					|| value.getCurrency() == null)
 				throw new ConvertResponseException(
 						"Cannot convert response, response values are null. Response: " + response);
 
 			if (value.getRates().length == 0)
 				throw new ConvertResponseException("Cannot convert response, rates is empty. Response: " + response);
 
-			for (int i = 0; i < value.getRates().length; i++) {
-				TableRate rate = value.getRates()[i];
+			List<ExchangeRate> result = new ArrayList<>();
 
-				Currency currency = Currency.byAlphabeticCode(rate.getCode());
+			for (CurrencyRate rate : value.getRates()) {
+				if (rate.getNo() == null || rate.getEffectiveDate() == null || rate.getMid() == null) {
+					throw new ConvertResponseException(
+							"Cannot convert response, rate values are null. Response: " + response);
+				}
+
+				Currency currency = Currency.byAlphabeticCode(value.getCode());
+
 				if (currency == null)
-					continue;
+					throw new ConvertResponseException(
+							"Cannot convert response, cannot find currency by alphabetic code. Response: " + response);
 
-				LocalDate date = LocalDate.parse(value.getEffectiveDate());
+				LocalDate date = LocalDate.parse(rate.getEffectiveDate());
+
 				result.add(new ExchangeRate(date, currency, new BigDecimal(rate.getMid())));
 			}
 
-			if (result.size() == 0) {
-				throw new ConvertResponseException("Cannot convert response, there is not one known currency.");
-			}
 			return result;
 		} catch (JsonSyntaxException e) {
 			throw new ResponseSyntaxException("Cannot convert response. Wrong Json syntax. Response: " + response
@@ -119,4 +113,5 @@ public class JsonConverter implements Converter {
 			throw new DataParseException("Cannot convert response. Wrong data format. Response: " + response);
 		}
 	}
+
 }

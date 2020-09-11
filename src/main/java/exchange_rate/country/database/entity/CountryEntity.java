@@ -22,8 +22,9 @@ import org.hibernate.annotations.NamedQuery;
 import exchange_rate.enums.CountryName;
 import exchange_rate.enums.Currency;
 
-@NamedQueries({ @NamedQuery(name = CountryEntity.QUERY_GET_BY_COUNTRY_NAME, query = "FROM CountryEntity WHERE name = :"
-		+ CountryEntity.PARAMETER_NAME) })
+@NamedQueries({
+		@NamedQuery(name = CountryEntity.QUERY_GET_BY_COUNTRY_NAME, query = "FROM CountryEntity e INNER JOIN FETCH e.currencies c WHERE e.name = :"
+				+ CountryEntity.PARAMETER_NAME) })
 @Entity
 @Table(name = "country")
 public class CountryEntity {
@@ -48,7 +49,7 @@ public class CountryEntity {
 	@Enumerated(EnumType.STRING)
 	private CountryName name;
 
-	@ElementCollection(targetClass = Currency.class, fetch = FetchType.EAGER)
+	@ElementCollection(targetClass = Currency.class, fetch = FetchType.LAZY)
 	@JoinTable(name = "inner_country_currencies", joinColumns = @JoinColumn(referencedColumnName = "country_id"))
 	@Column(name = "currency", nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -68,5 +69,10 @@ public class CountryEntity {
 
 	public void removeCurrency(Currency currency) {
 		currencies.remove(currency);
+	}
+
+	@Override
+	public String toString() {
+		return "CountryEntity [id=" + id + ", name=" + name + ", currencies=" + currencies + "]";
 	}
 }

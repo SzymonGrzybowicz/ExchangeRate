@@ -1,12 +1,15 @@
 package exchange_rate.downloader.nbp;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import exchange_rate.downloader.ExchangeRateDownloader;
 import exchange_rate.downloader.nbp.cache.Cache;
 import exchange_rate.downloader.nbp.client.NbpClient;
 import exchange_rate.downloader.nbp.client.http.HttpNbpClient;
 import exchange_rate.downloader.nbp.exception.checked.NotFoundException;
+import exchange_rate.downloader.nbp.exception.unchecked.BadRequestException;
 import exchange_rate.dto.ExchangeRate;
 import exchange_rate.enums.Currency;
 
@@ -71,5 +74,17 @@ public class NbpExchangeRateDownloader implements ExchangeRateDownloader {
 		}
 
 		throw new NotFoundException("Cannot find exchange rate for that date! Make sure that data is correct.");
+	}
+
+	@Override
+	public List<ExchangeRate> getExchangeRatesForPeroid(Currency currency, LocalDate startDate, LocalDate endDate) {
+		if (ChronoUnit.DAYS.between(startDate, endDate) > 367) {
+			throw new BadRequestException("Perriod cannot be longer than 367 days");
+		}
+		List<ExchangeRate> rates = client.getForPeroid(currency, startDate, endDate);
+		rates.forEach(r -> cache.saveOrUpdateIfExists(r));
+
+		return rates;
+
 	}
 }
