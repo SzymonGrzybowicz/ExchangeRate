@@ -18,16 +18,17 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import exchange_rate.downloader.nbp.cache.Cache;
-import exchange_rate.downloader.nbp.client.NbpClient;
-import exchange_rate.downloader.nbp.exception.checked.NotFoundException;
+import enums.Currency;
+import exchange_rate.NbpExchangeRateClient;
+import exchange_rate.cache.Cache;
+import exchange_rate.downloader.NbpDownloader;
 import exchange_rate.dto.ExchangeRate;
-import exchange_rate.enums.Currency;
+import exchange_rate.exception.checked.NotFoundException;
 
 public class NbpDownloaderTestSuite {
 
 	@Mock
-	private NbpClient downloaderMock;
+	private NbpDownloader downloaderMock;
 
 	@Mock
 	private Cache cacheMock;
@@ -47,7 +48,7 @@ public class NbpDownloaderTestSuite {
 
 		when(cacheMock.get(eq(currency), any())).thenReturn(exceptedResult);
 
-		NbpExchangeRateDownloader client = new NbpExchangeRateDownloader(downloaderMock);
+		NbpExchangeRateClient client = new NbpExchangeRateClient(downloaderMock);
 		client.setCache(cacheMock);
 
 		// When
@@ -69,7 +70,7 @@ public class NbpDownloaderTestSuite {
 		when(cacheMock.get(eq(currency), any())).thenThrow(NotFoundException.class);
 		when(downloaderMock.get(eq(currency))).thenReturn(exceptedResult);
 
-		NbpExchangeRateDownloader client = new NbpExchangeRateDownloader(downloaderMock);
+		NbpExchangeRateClient client = new NbpExchangeRateClient(downloaderMock);
 		client.setCache(cacheMock);
 
 		// When
@@ -89,7 +90,7 @@ public class NbpDownloaderTestSuite {
 
 		when(downloaderMock.get(eq(currency))).thenReturn(exceptedResult);
 
-		NbpExchangeRateDownloader client = new NbpExchangeRateDownloader(downloaderMock);
+		NbpExchangeRateClient client = new NbpExchangeRateClient(downloaderMock);
 
 		// When
 		ExchangeRate result = client.getActualExchangeRate(currency);
@@ -108,7 +109,7 @@ public class NbpDownloaderTestSuite {
 
 		when(cacheMock.get(eq(currency), eq(date))).thenReturn(exceptedResult);
 
-		NbpExchangeRateDownloader client = new NbpExchangeRateDownloader(downloaderMock);
+		NbpExchangeRateClient client = new NbpExchangeRateClient(downloaderMock);
 		client.setCache(cacheMock);
 
 		// When
@@ -130,7 +131,7 @@ public class NbpDownloaderTestSuite {
 		when(cacheMock.get(eq(currency), eq(date))).thenThrow(NotFoundException.class);
 		when(downloaderMock.get(eq(currency), eq(date))).thenReturn(exceptedResult);
 
-		NbpExchangeRateDownloader client = new NbpExchangeRateDownloader(downloaderMock);
+		NbpExchangeRateClient client = new NbpExchangeRateClient(downloaderMock);
 		client.setCache(cacheMock);
 
 		// When
@@ -150,7 +151,7 @@ public class NbpDownloaderTestSuite {
 
 		when(downloaderMock.get(eq(currency), eq(date))).thenReturn(exceptedResult);
 
-		NbpExchangeRateDownloader client = new NbpExchangeRateDownloader(downloaderMock);
+		NbpExchangeRateClient client = new NbpExchangeRateClient(downloaderMock);
 
 		// When
 		ExchangeRate result = client.getExchangeRate(currency, date);
@@ -172,7 +173,7 @@ public class NbpDownloaderTestSuite {
 		when(downloaderMock.get(eq(currency), any())).thenThrow(NotFoundException.class);
 		when(downloaderMock.get(eq(currency), eq(dayWithRate))).thenReturn(exceptedResult);
 
-		NbpExchangeRateDownloader client = new NbpExchangeRateDownloader(downloaderMock);
+		NbpExchangeRateClient client = new NbpExchangeRateClient(downloaderMock);
 
 		// When
 		ExchangeRate result = client.getExchangeRate(currency, holiday);
@@ -195,7 +196,7 @@ public class NbpDownloaderTestSuite {
 		when(downloaderMock.get(eq(currency), any())).thenThrow(NotFoundException.class);
 		when(downloaderMock.get(eq(currency), eq(dayWithRate))).thenReturn(exceptedResult);
 
-		NbpExchangeRateDownloader client = new NbpExchangeRateDownloader(downloaderMock);
+		NbpExchangeRateClient client = new NbpExchangeRateClient(downloaderMock);
 
 		// When
 		assertThrows(NotFoundException.class, () -> client.getExchangeRate(currency, holiday));

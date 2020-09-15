@@ -3,7 +3,7 @@ package exchange_rate.dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import exchange_rate.enums.Currency;
+import enums.Currency;
 
 public class ExchangeRate {
 

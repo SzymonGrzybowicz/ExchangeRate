@@ -1,37 +1,46 @@
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 
-import exampleHQL.ExampleCountryRepo;
-import exchange_rate.ExchangeRateFasade;
-import exchange_rate.enums.CountryName;
-import exchange_rate.enums.Currency;
+import country.CountryRepository;
+import country.database.DatabaseCountryRepository;
+import country.dto.Country;
+import database.Database;
+import enums.Currency;
+import exchange_rate.dto.ExchangeRate;
+import exchange_rate.repository.ExchangeRateRepository;
 
 public class Main {
 
 	public static void main(String[] args) {
-		ExchangeRateFasade fasade = new ExchangeRateFasade();
 
-		System.out.println("max: " + fasade.getMaximumRateForPeroid(Currency.AMERICAN_DOLAR, LocalDate.of(2018, 1, 1),
-				LocalDate.of(2019, 1, 1)));
+		ExchangeRateRepository repository = new ExchangeRateRepository(Database.getInstance());
 
-		System.out.println("min: " + fasade.getMinimumRateForPeroid(Currency.AMERICAN_DOLAR, LocalDate.of(2018, 1, 1),
-				LocalDate.of(2019, 1, 1)));
+		System.out.println(repository.getFiveMaximumExchangeRate(Currency.EURO));
+		System.out.println(repository.getFiveMinimumExchangeRate(Currency.EURO));
 
-		System.out.println(fasade.getBiggestRateDifferenceInPeroid(Currency.AMERICAN_DOLAR, LocalDate.of(2018, 1, 1),
-				LocalDate.of(2019, 1, 1)));
+		CountryRepository repo = new DatabaseCountryRepository(Database.getInstance());
 
-		List<Currency> currencies = Arrays.asList(Currency.EURO, Currency.POUND_STERLING);
-		System.out.println(fasade.getCurrencyWithBiggestRateDifferenceInPeroid(currencies, LocalDate.of(2018, 1, 1),
-				LocalDate.of(2019, 1, 1)));
+//		Set<Currency> currencies = new HashSet<>();
+//		currencies.add(Currency.AMERICAN_DOLAR);
+//		currencies.add(Currency.EURO);
+//		repo.save(new Country(CountryName.DEUTSCHLAND, currencies));
+//		currencies.clear();
+//		currencies.add(Currency.AMERICAN_DOLAR);
+//		repo.save(new Country(CountryName.UNITED_STATES, currencies));
+//
+//		repo.save(new Country(CountryName.WAKANDA, new HashSet<>()));
+		List<Country> countries = repo.getCountriesHasMoreThanOneCurrency();
+
+		countries.forEach(c -> System.out.println(c.getName()));
 	}
 
-	private void showNplus1() {
-		ExampleCountryRepo repo = new ExampleCountryRepo();
-
-		repo.getWithoutNPlus1(CountryName.DEUTSCHLAND);
-
-		repo.getWithNPlus1(CountryName.DEUTSCHLAND);
+	public static void fillDatabase(ExchangeRateRepository repository) {
+		LocalDate date = LocalDate.now();
+		for (int i = 0; i < 100; i++) {
+			repository.save(new ExchangeRate(date, Currency.EURO, new BigDecimal("" + i + "." + i)));
+			date = date.minusDays(1);
+		}
 	}
 
 }

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThrows;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -16,26 +17,31 @@ import exchange_rate.exception.unchecked.ConvertResponseException;
 import exchange_rate.exception.unchecked.DataParseException;
 import exchange_rate.exception.unchecked.ResponseSyntaxException;
 
-public class JsonCurrencyConverterTestSuite {
+public class JsonCurrencyListConverterTestSuite {
 
 	private final LocalDate testDate = LocalDate.of(1, 1, 1);
 	private final Currency testCurrency = Currency.EURO;
 	private final BigDecimal testRate = new BigDecimal("4.4181");
 	// @formatter:off
 	private final String CORRECT_RESPONSE = 
-		"{" +
-			"\"table\":\"A\"," +
-			"\"currency\":\"euro\"," +
-			"\"code\":\"" + testCurrency.getAlphabeticCode() + "\"," +
-				"\"rates\":" + 
-				"[" +
-					"{" +
-						"\"no\":\"172/A/NBP/2020\"," +
-						"\"effectiveDate\":\"" + testDate + "\"," +
-						"\"mid\":" + testRate + 
-					"}" +
-				"]" +
-		"}";
+			"{" +
+				"\"table\":\"A\"," +
+				"\"currency\":\"euro\"," +
+				"\"code\":\"" + testCurrency.getAlphabeticCode() + "\"," +
+					"\"rates\":" + 
+					"[" +
+						"{" +
+							"\"no\":\"172/A/NBP/2020\"," +
+							"\"effectiveDate\":\"" + testDate + "\"," +
+							"\"mid\":" + testRate + 
+						"}," +
+						"{" +
+							"\"no\":\"172/A/NBP/2020\"," +
+							"\"effectiveDate\":\"" + LocalDate.now() + "\"," +
+							"\"mid\":2.1234" +
+						"}" +
+					"]" +
+			"}";
 	
 	private final String WRONG_CURRENCY_CODE_RESPONSE = 
 		"{" +
@@ -96,53 +102,22 @@ public class JsonCurrencyConverterTestSuite {
 				"}" +
 			"]" +
 		"}";
-	
-	private final String NUMEROUS_RESPONSE = 
-			"{" +
-				"\"table\":\"A\"," +
-				"\"currency\":\"euro\"," +
-				"\"code\":\"" + testCurrency.getAlphabeticCode() + "\"," +
-					"\"rates\":" + 
-					"[" +
-						"{" +
-							"\"no\":\"172/A/NBP/2020\"," +
-							"\"effectiveDate\":\"" + testDate + "\"," +
-							"\"mid\":" + testRate + 
-						"}," +
-						"{" +
-							"\"no\":\"172/A/NBP/2020\"," +
-							"\"effectiveDate\":\"" + testDate + "\"," +
-							"\"mid\":" + testRate +
-						"}" +
-					"]" +
-			"}";
 	// @formatter:on
 
 	@Test
-	public void test_convert_correctResponse() {
+	public void test_correct_response() {
 		// Given
 		Converter converter = new JsonConverter();
 
 		// When
-		ExchangeRate resultRate = converter.convertCurrencyResponse(CORRECT_RESPONSE);
+		List<ExchangeRate> result = converter.convertCurrencyListResponse(CORRECT_RESPONSE);
 
 		// Then
-		assertThat(resultRate.getCurrency()).isEqualTo(Currency.EURO);
-		assertThat(resultRate.getDate()).isEqualTo(testDate);
-		assertThat(resultRate.getRate()).isEqualTo(testRate);
-	}
-
-	@Test
-	public void test_convert_numerousRates() {
-		// Given
-		Converter converter = new JsonConverter();
-
-		// When
-		Exception exception = assertThrows(ConvertResponseException.class,
-				() -> converter.convertCurrencyResponse(NUMEROUS_RESPONSE));
-
-		// Then
-		assertThat(exception).hasMessageContaining("Cannot convert response, numerous items.");
+		assertThat(result).hasSize(2);
+		ExchangeRate exchangeRate = result.get(0);
+		assertThat(exchangeRate.getCurrency()).isEqualTo(Currency.EURO);
+		assertThat(exchangeRate.getDate()).isEqualTo(testDate);
+		assertThat(exchangeRate.getRate()).isEqualTo(testRate);
 	}
 
 	@Test
@@ -152,7 +127,7 @@ public class JsonCurrencyConverterTestSuite {
 
 		// When
 		Exception exception = assertThrows(ConvertResponseException.class,
-				() -> converter.convertCurrencyResponse(WRONG_CURRENCY_CODE_RESPONSE));
+				() -> converter.convertCurrencyListResponse(WRONG_CURRENCY_CODE_RESPONSE));
 
 		// Then
 		assertThat(exception).hasMessageContaining("Cannot convert response, cannot find currency by alphabetic code.");
@@ -165,7 +140,7 @@ public class JsonCurrencyConverterTestSuite {
 
 		// When
 		Exception exception = assertThrows(ConvertResponseException.class,
-				() -> converter.convertCurrencyResponse(NO_RATE_RESPONSE));
+				() -> converter.convertCurrencyListResponse(NO_RATE_RESPONSE));
 
 		// Then
 		assertThat(exception).hasMessageContaining("Cannot convert response, response values are null.");
@@ -178,7 +153,7 @@ public class JsonCurrencyConverterTestSuite {
 
 		// When
 		Exception exception = assertThrows(ConvertResponseException.class,
-				() -> converter.convertCurrencyResponse(EMPTY_RATE_RESPONSE));
+				() -> converter.convertCurrencyListResponse(EMPTY_RATE_RESPONSE));
 
 		// Then
 		assertThat(exception).hasMessageContaining("Cannot convert response, rates is empty.");
@@ -191,7 +166,7 @@ public class JsonCurrencyConverterTestSuite {
 
 		// When
 		Exception exception = assertThrows(ConvertResponseException.class,
-				() -> converter.convertCurrencyResponse(NULL_RATE_RESPONSE));
+				() -> converter.convertCurrencyListResponse(NULL_RATE_RESPONSE));
 
 		// Then
 		assertThat(exception).hasMessageContaining("Cannot convert response, rate values are null.");
@@ -203,7 +178,8 @@ public class JsonCurrencyConverterTestSuite {
 		Converter converter = new JsonConverter();
 
 		// When
-		Exception exception = assertThrows(ConvertResponseException.class, () -> converter.convertCurrencyResponse(""));
+		Exception exception = assertThrows(ConvertResponseException.class,
+				() -> converter.convertCurrencyListResponse(""));
 
 		// Then
 		assertThat(exception).hasMessageContaining("Cannot convert response, response is null.");
@@ -216,7 +192,7 @@ public class JsonCurrencyConverterTestSuite {
 
 		// When
 		Exception exception = assertThrows(ResponseSyntaxException.class,
-				() -> converter.convertCurrencyResponse("testWRONGstring"));
+				() -> converter.convertCurrencyListResponse("testWRONGstring"));
 
 		// Then
 		assertThat(exception).hasMessageContaining("Cannot convert response. Wrong Json syntax.");
@@ -229,7 +205,7 @@ public class JsonCurrencyConverterTestSuite {
 
 		// When
 		Exception exception = assertThrows(DataParseException.class,
-				() -> converter.convertCurrencyResponse(WRONG_DATE_FORMAT_RESPONSE));
+				() -> converter.convertCurrencyListResponse(WRONG_DATE_FORMAT_RESPONSE));
 
 		// Then
 		assertThat(exception).hasMessageContaining("Cannot convert response. Wrong data format.");
