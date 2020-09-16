@@ -9,7 +9,7 @@ public interface Converter {
 	ExchangeRate convertCurrencyResponse(String response);
 
 	public enum DataFormat {
-		JSON, XML;
+		JSON, XML, FILE;
 	}
 
 }

@@ -1,5 +1,6 @@
 package training.exchange_rate.downloader.http;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -30,8 +32,9 @@ import training.exchange_rate.downloader.http.converter.Converter.DataFormat;
 import training.exchange_rate.exception.checked.NotFoundException;
 import training.exchange_rate.exception.unchecked.BadRequestException;
 import training.exchange_rate.exception.unchecked.ConnectionException;
+import training.exchange_rate.exception.unchecked.DataFormatException;
 
-public class HttpNbpClientTestSuite {
+public class HttpNbpDownloaderTestSuite {
 
 	@Mock
 	private Converter converterMock;
@@ -156,6 +159,62 @@ public class HttpNbpClientTestSuite {
 		// When && Then
 		assertThrows(ConnectionException.class, () -> downloader.get(Currency.EURO, LocalDate.MAX));
 		verify(converterMock, never()).convertCurrencyResponse(Mockito.anyString());
+	}
+
+	@Test
+	public void test_buildUrl_jsonFormat() throws IOException {
+		// Given
+		when(converterMock.getDataFormat()).thenReturn(DataFormat.JSON);
+
+		Response response = mockResponse(200, "");
+		OkHttpClient clientMock = mockHttpClient(response);
+		HttpNbpDownloader downloader = new HttpNbpDownloader(clientMock, converterMock);
+
+		// When
+		downloader.get(Currency.EURO);
+
+		// Then
+		ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+		verify(clientMock).newCall(requestCaptor.capture());
+
+		assertThat(requestCaptor.getValue().urlString()).contains("?format=json");
+
+	}
+
+	@Test
+	public void test_buildUrl_xmlFormat() throws IOException {
+		// Given
+		when(converterMock.getDataFormat()).thenReturn(DataFormat.XML);
+
+		Response response = mockResponse(200, "");
+		OkHttpClient clientMock = mockHttpClient(response);
+		HttpNbpDownloader downloader = new HttpNbpDownloader(clientMock, converterMock);
+
+		// When
+		downloader.get(Currency.EURO);
+
+		// Then
+		ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+		verify(clientMock).newCall(requestCaptor.capture());
+
+		assertThat(requestCaptor.getValue().urlString()).contains("?format=xml");
+	}
+
+	@Test
+	public void test_buildUrl_wrongFormat() throws IOException {
+		// Given
+		when(converterMock.getDataFormat()).thenReturn(DataFormat.FILE);
+
+		Response response = mockResponse(200, "");
+		OkHttpClient clientMock = mockHttpClient(response);
+		HttpNbpDownloader downloader = new HttpNbpDownloader(clientMock, converterMock);
+
+		// When
+		Exception e = assertThrows(DataFormatException.class, () -> downloader.get(Currency.EURO));
+
+		// Then
+		assertThat(e).hasMessageContaining("is not supported in Http downloader");
+		verify(clientMock, never()).newCall(any());
 	}
 
 	private Response mockResponse(int code, String body) {

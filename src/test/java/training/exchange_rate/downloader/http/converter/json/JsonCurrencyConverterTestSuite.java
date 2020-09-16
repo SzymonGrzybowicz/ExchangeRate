@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import training.enums.Currency;
 import training.exchange_rate.downloader.http.converter.Converter;
-import training.exchange_rate.downloader.http.converter.json.JsonConverter;
 import training.exchange_rate.dto.ExchangeRate;
 import training.exchange_rate.exception.unchecked.ConvertResponseException;
 import training.exchange_rate.exception.unchecked.DataParseException;

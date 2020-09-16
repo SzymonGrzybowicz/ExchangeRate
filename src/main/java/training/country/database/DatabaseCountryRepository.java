@@ -63,7 +63,7 @@ public class DatabaseCountryRepository implements CountryRepository {
 		UnitOfWork<Void> unitOfWork = (Session session) -> {
 
 			CountryEntity entity = read(countryName, session)
-					.orElseThrow(() -> new BadRequestException("Cannot add currency: " + currency
+					.orElseThrow(() -> new NotFoundException("Cannot add currency: " + currency
 							+ "to country with name: " + countryName + " cannot find country."));
 
 			if (entity.getCurrencies().contains(currency)) {
@@ -83,7 +83,7 @@ public class DatabaseCountryRepository implements CountryRepository {
 	public void removeCurrency(CountryName countryName, Currency currency) {
 		UnitOfWork<Void> unitOfWork = (Session session) -> {
 			CountryEntity entity = read(countryName, session)
-					.orElseThrow(() -> new BadRequestException("Cannot remove currency: " + currency
+					.orElseThrow(() -> new NotFoundException("Cannot remove currency: " + currency
 							+ "from country with name: " + countryName + " cannot find country."));
 
 			if (!entity.getCurrencies().contains(currency)) {
@@ -104,7 +104,7 @@ public class DatabaseCountryRepository implements CountryRepository {
 
 		UnitOfWork<Void> unitOfWork = (Session session) -> {
 
-			CountryEntity entity = read(countryName, session).orElseThrow(() -> new BadRequestException(
+			CountryEntity entity = read(countryName, session).orElseThrow(() -> new NotFoundException(
 					"Cannot remove country with name: " + countryName + " cannot find country."));
 
 			session.remove(entity);
@@ -116,14 +116,15 @@ public class DatabaseCountryRepository implements CountryRepository {
 
 	@Override
 	public List<Country> getCountriesHasMoreThanOneCurrency() {
-		UnitOfWork<List<Country>> unitOfWork = (Session session) -> {
+		UnitOfWork<List<CountryEntity>> unitOfWork = (Session session) -> {
 			Query<CountryEntity> query = session.createNamedQuery(CountryEntity.QUERY_WHERE_HAS_MORE_THAN_TWO_CURRENCY,
 					CountryEntity.class);
 
-			return query.getResultList().stream().map(mapper::map).collect(Collectors.toList());
+			return query.getResultList();
 		};
 
-		return database.execute(unitOfWork);
+		List<CountryEntity> result = database.execute(unitOfWork);
+		return result.stream().map(mapper::map).collect(Collectors.toList());
 	}
 
 	private Optional<CountryEntity> read(CountryName countryName, Session session) {

@@ -1,6 +1,7 @@
 package training.database;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -9,29 +10,41 @@ import static org.mockito.Mockito.when;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
-import training.database.Database;
-import training.database.UnitOfWork;
+import training.exchange_rate.exception.unchecked.BadRequestException;
 
 public class DatabaseTestSuite {
+
+	@Mock
+	private SessionFactory sessionFactoryMock;
+
+	@Mock
+	private Session sessionMock;
+
+	@Mock
+	private Transaction transactionMock;
+
+	private Database database;
+
+	@Before
+	public void init() {
+		MockitoAnnotations.openMocks(this);
+		when(sessionFactoryMock.openSession()).thenReturn(sessionMock);
+		when(sessionMock.getTransaction()).thenReturn(transactionMock);
+		database = new Database(sessionFactoryMock);
+	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void test_execute_voidUnitOfWork() throws Exception {
 		// Given
-		SessionFactory sessionFactoryMock = Mockito.mock(SessionFactory.class);
-		Session sessionMock = Mockito.mock(Session.class);
-		Transaction transactionMock = Mockito.mock(Transaction.class);
-
-		when(sessionFactoryMock.openSession()).thenReturn(sessionMock);
-		when(sessionMock.getTransaction()).thenReturn(transactionMock);
-
 		UnitOfWork<Void> unitOfWork = Mockito.mock(UnitOfWork.class);
 		when(unitOfWork.run(any())).thenReturn(null);
-
-		Database database = new Database(sessionFactoryMock);
 
 		// When
 		database.execute(unitOfWork);
@@ -46,10 +59,6 @@ public class DatabaseTestSuite {
 	@Test
 	public void test_execute_objectUnitOfWork() {
 		// Given
-		SessionFactory sessionFactoryMock = Mockito.mock(SessionFactory.class);
-		Session sessionMock = Mockito.mock(Session.class);
-		Transaction transactionMock = Mockito.mock(Transaction.class);
-
 		when(sessionFactoryMock.openSession()).thenReturn(sessionMock);
 		when(sessionMock.getTransaction()).thenReturn(transactionMock);
 
@@ -57,8 +66,6 @@ public class DatabaseTestSuite {
 		UnitOfWork<String> unitOfWork = (Session session) -> {
 			return exceptedString;
 		};
-
-		Database database = new Database(sessionFactoryMock);
 
 		// When
 		String result = database.execute(unitOfWork);
@@ -68,6 +75,24 @@ public class DatabaseTestSuite {
 
 		verify(sessionFactoryMock).openSession();
 		verify(transactionMock).commit();
+		verify(sessionMock).close();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void test_execute_throwsException() {
+		// Given
+		UnitOfWork<Void> unitOfWork = Mockito.mock(UnitOfWork.class);
+		String exceptedMessage = "testMESSAGE";
+		when(unitOfWork.run(any())).thenThrow(new BadRequestException(exceptedMessage));
+
+		// Then
+		Exception e = assertThrows(BadRequestException.class, () -> database.execute(unitOfWork));
+
+		// Then
+		assertThat(e).hasMessage(exceptedMessage);
+		verify(sessionFactoryMock).openSession();
+		verify(transactionMock).rollback();
 		verify(sessionMock).close();
 	}
 }
