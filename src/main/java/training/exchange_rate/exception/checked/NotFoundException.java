@@ -1,8 +1,6 @@
 package training.exchange_rate.exception.checked;
 
-import training.exchange_rate.exception.CheckedException;
-
-public class NotFoundException extends CheckedException {
+public class NotFoundException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 

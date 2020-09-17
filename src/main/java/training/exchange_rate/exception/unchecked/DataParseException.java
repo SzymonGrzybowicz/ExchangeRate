@@ -1,8 +1,6 @@
 package training.exchange_rate.exception.unchecked;
 
-import training.exchange_rate.exception.UncheckedException;
-
-public class DataParseException extends UncheckedException {
+public class DataParseException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
