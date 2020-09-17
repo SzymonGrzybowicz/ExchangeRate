@@ -1,4 +1,4 @@
-package training.exchange_rate.database.mapper;
+package unit.training.exchange_rate.database.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,9 +9,10 @@ import org.junit.Test;
 
 import training.enums.Currency;
 import training.exchange_rate.database.entity.ExchangeRateEntity;
+import training.exchange_rate.database.mapper.ExchangeRateEntityMapper;
 import training.exchange_rate.dto.ExchangeRate;
 
-public class ExchangeRateEntityMapperTestSuite {
+public class ExchangeRateEntityMapperTest {
 
 	@Test
 	public void test_map_entity() {

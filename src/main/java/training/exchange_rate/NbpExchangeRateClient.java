@@ -2,7 +2,6 @@ package training.exchange_rate;
 
 import java.time.LocalDate;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import training.enums.Currency;
@@ -17,7 +16,6 @@ public class NbpExchangeRateClient {
 	private NbpDownloader downloader;
 	private Cache cache;
 
-	@Autowired
 	public NbpExchangeRateClient(NbpDownloader downloader, Cache cache) {
 		this.downloader = downloader;
 		this.cache = cache;
@@ -42,8 +40,7 @@ public class NbpExchangeRateClient {
 				return cache.get(currency, date);
 			} catch (NotFoundException ex) {
 				try {
-					ExchangeRate result;
-					result = downloader.get(currency, requestDate);
+					ExchangeRate result = downloader.get(currency, requestDate);
 					cache.saveOrUpdateIfExists(result);
 					return result;
 				} catch (NotFoundException e) {

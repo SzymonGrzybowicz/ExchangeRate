@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 import org.hibernate.query.Query;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import training.country.CountryRepository;
 import training.country.database.entity.CountryEntity;
@@ -24,7 +23,6 @@ public class DatabaseCountryRepository implements CountryRepository {
 	private CountryMapper mapper;
 	private Database database;
 
-	@Autowired
 	public DatabaseCountryRepository(CountryMapper mapper, Database database) {
 		this.mapper = mapper;
 		this.database = database;

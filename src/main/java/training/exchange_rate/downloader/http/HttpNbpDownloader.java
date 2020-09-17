@@ -3,7 +3,6 @@ package training.exchange_rate.downloader.http;
 import java.io.IOException;
 import java.time.LocalDate;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.squareup.okhttp.OkHttpClient;
@@ -25,7 +24,6 @@ public class HttpNbpDownloader implements NbpDownloader {
 	private OkHttpClient client;
 	private Converter converter;
 
-	@Autowired
 	public HttpNbpDownloader(OkHttpClient client, Converter converter) {
 		super();
 		this.client = client;

@@ -25,7 +25,7 @@ import training.enums.Currency;
 @NamedQueries({
 		@NamedQuery(name = CountryEntity.QUERY_BY_COUNTRY_NAME, query = "FROM CountryEntity e INNER JOIN FETCH e.currencies c WHERE e.name = :"
 				+ CountryEntity.PARAMETER_NAME),
-		@NamedQuery(name = CountryEntity.QUERY_WHERE_HAS_MORE_THAN_TWO_CURRENCY, query = "FROM CountryEntity e WHERE SIZE(e.currencies) > 1") })
+		@NamedQuery(name = CountryEntity.QUERY_WHERE_HAS_MORE_THAN_TWO_CURRENCY, query = "SELECT DISTINCT e FROM CountryEntity e INNER JOIN FETCH e.currencies c WHERE SIZE(e.currencies) > 1") })
 @Entity
 @Table(name = "country")
 public class CountryEntity {

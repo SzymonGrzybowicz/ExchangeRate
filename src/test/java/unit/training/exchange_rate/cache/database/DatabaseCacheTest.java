@@ -1,4 +1,4 @@
-package training.exchange_rate.cache.database;
+package unit.training.exchange_rate.cache.database;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,11 +19,12 @@ import org.mockito.MockitoAnnotations;
 
 import training.enums.Currency;
 import training.exchange_rate.cache.Cache;
+import training.exchange_rate.cache.database.DatabaseCache;
 import training.exchange_rate.dto.ExchangeRate;
 import training.exchange_rate.exception.unchecked.BadRequestException;
 import training.exchange_rate.repository.ExchangeRateRepository;
 
-public class DatabaseCacheTestSuite {
+public class DatabaseCacheTest {
 
 	@Mock
 	private ExchangeRateRepository repositoryMock;

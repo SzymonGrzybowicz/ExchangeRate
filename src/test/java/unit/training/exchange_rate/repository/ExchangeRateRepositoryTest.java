@@ -1,4 +1,4 @@
-package training.exchange_rate.repository;
+package unit.training.exchange_rate.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -32,9 +32,10 @@ import training.exchange_rate.database.mapper.ExchangeRateEntityMapper;
 import training.exchange_rate.dto.ExchangeRate;
 import training.exchange_rate.exception.checked.NotFoundException;
 import training.exchange_rate.exception.unchecked.BadRequestException;
+import training.exchange_rate.repository.ExchangeRateRepository;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ExchangeRateRepositoryTestSuite {
+public class ExchangeRateRepositoryTest {
 
 	@Mock
 	private Session sessionMock;
@@ -227,7 +228,7 @@ public class ExchangeRateRepositoryTestSuite {
 	}
 
 	@Test
-	public void test_getMaximumInPeriod() {
+	public void test_getMaximumRateInPeriod() {
 		// Given
 		ExchangeRateEntity exceptedEntity = new ExchangeRateEntity(new BigDecimal("123.321"), LocalDate.MAX,
 				Currency.AMERICAN_DOLAR);
@@ -236,7 +237,7 @@ public class ExchangeRateRepositoryTestSuite {
 		when(databaseMock.execute(any())).thenReturn(exceptedEntity);
 
 		UnitOfWork<ExchangeRateEntity> unitOfWork = captUnitOfWork(
-				() -> repository.getMaximumInPeriod(Currency.AMERICAN_DOLAR, LocalDate.MIN, LocalDate.MAX));
+				() -> repository.getMaximumRateInPeriod(Currency.AMERICAN_DOLAR, LocalDate.MIN, LocalDate.MAX));
 
 		// When
 		ExchangeRateEntity result = unitOfWork.run(sessionMock);
@@ -248,12 +249,12 @@ public class ExchangeRateRepositoryTestSuite {
 	}
 
 	@Test
-	public void test_getMaximumInPeriod_notFound() {
+	public void test_getMaximumRateInPeriod_notFound() {
 		// Given
 		when(queryMock.uniqueResultOptional()).thenReturn(Optional.ofNullable(null));
 
 		UnitOfWork<ExchangeRateEntity> unitOfWork = captUnitOfWork(
-				() -> repository.getMaximumInPeriod(Currency.AMERICAN_DOLAR, LocalDate.MIN, LocalDate.MAX));
+				() -> repository.getMaximumRateInPeriod(Currency.AMERICAN_DOLAR, LocalDate.MIN, LocalDate.MAX));
 
 		// When
 		Exception e = assertThrows(NotFoundException.class, () -> unitOfWork.run(sessionMock));
@@ -265,7 +266,7 @@ public class ExchangeRateRepositoryTestSuite {
 	}
 
 	@Test
-	public void test_getMinimumInPeriod() {
+	public void test_getMinimumRateInPeriod() {
 		// Given
 		ExchangeRateEntity exceptedEntity = new ExchangeRateEntity(new BigDecimal("123.321"), LocalDate.MAX,
 				Currency.AMERICAN_DOLAR);
@@ -274,7 +275,7 @@ public class ExchangeRateRepositoryTestSuite {
 		when(databaseMock.execute(any())).thenReturn(exceptedEntity);
 
 		UnitOfWork<ExchangeRateEntity> unitOfWork = captUnitOfWork(
-				() -> repository.getMinimumInPeriod(Currency.AMERICAN_DOLAR, LocalDate.MIN, LocalDate.MAX));
+				() -> repository.getMinimumRateInPeriod(Currency.AMERICAN_DOLAR, LocalDate.MIN, LocalDate.MAX));
 
 		// When
 		ExchangeRateEntity result = unitOfWork.run(sessionMock);
@@ -286,12 +287,12 @@ public class ExchangeRateRepositoryTestSuite {
 	}
 
 	@Test
-	public void test_getMinimumInPeriod_notFound() {
+	public void test_getMinimumRateInPeriod_notFound() {
 		// Given
 		when(queryMock.uniqueResultOptional()).thenReturn(Optional.ofNullable(null));
 
 		UnitOfWork<ExchangeRateEntity> unitOfWork = captUnitOfWork(
-				() -> repository.getMinimumInPeriod(Currency.AMERICAN_DOLAR, LocalDate.MIN, LocalDate.MAX));
+				() -> repository.getMinimumRateInPeriod(Currency.AMERICAN_DOLAR, LocalDate.MIN, LocalDate.MAX));
 
 		// When
 		Exception e = assertThrows(NotFoundException.class, () -> unitOfWork.run(sessionMock));

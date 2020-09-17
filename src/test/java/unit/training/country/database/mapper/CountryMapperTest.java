@@ -1,4 +1,4 @@
-package training.country.database.mapper;
+package unit.training.country.database.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,11 +8,12 @@ import org.assertj.core.util.Sets;
 import org.junit.Test;
 
 import training.country.database.entity.CountryEntity;
+import training.country.database.mapper.CountryMapper;
 import training.country.dto.Country;
 import training.enums.CountryName;
 import training.enums.Currency;
 
-public class CountryMapperTestSuite {
+public class CountryMapperTest {
 
 	@Test
 	public void test_map_entity() {

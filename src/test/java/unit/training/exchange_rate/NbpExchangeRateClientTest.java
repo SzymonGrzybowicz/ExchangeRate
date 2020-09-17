@@ -1,4 +1,4 @@
-package training.exchange_rate;
+package unit.training.exchange_rate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -19,12 +19,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import training.enums.Currency;
+import training.exchange_rate.NbpExchangeRateClient;
 import training.exchange_rate.cache.Cache;
 import training.exchange_rate.downloader.NbpDownloader;
 import training.exchange_rate.dto.ExchangeRate;
 import training.exchange_rate.exception.checked.NotFoundException;
 
-public class NbpExchangeRateClientTestSuite {
+public class NbpExchangeRateClientTest {
 
 	@Mock
 	private NbpDownloader downloaderMock;

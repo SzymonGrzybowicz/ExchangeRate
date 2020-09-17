@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 import org.hibernate.query.Query;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import training.database.Database;
@@ -25,7 +24,6 @@ public class ExchangeRateRepository {
 	private Database database;
 	private ExchangeRateEntityMapper mapper;
 
-	@Autowired
 	public ExchangeRateRepository(Database database, ExchangeRateEntityMapper mapper) {
 		super();
 		this.database = database;
@@ -86,7 +84,7 @@ public class ExchangeRateRepository {
 		database.execute(unitOfWork);
 	}
 
-	public ExchangeRate getMaximumInPeriod(Currency currency, LocalDate startDate, LocalDate endDate) {
+	public ExchangeRate getMaximumRateInPeriod(Currency currency, LocalDate startDate, LocalDate endDate) {
 		UnitOfWork<ExchangeRateEntity> unitOfWork = (Session session) -> {
 			Query<ExchangeRateEntity> query = session.createNamedQuery(
 					ExchangeRateEntity.QUERY_BY_CURRENCY_AND_DATE_SORTED_BY_RATE_DESC, ExchangeRateEntity.class);
@@ -104,7 +102,7 @@ public class ExchangeRateRepository {
 		return mapper.map(entity);
 	}
 
-	public ExchangeRate getMinimumInPeriod(Currency currency, LocalDate startDate, LocalDate endDate) {
+	public ExchangeRate getMinimumRateInPeriod(Currency currency, LocalDate startDate, LocalDate endDate) {
 		UnitOfWork<ExchangeRateEntity> unitOfWork = (Session session) -> {
 			Query<ExchangeRateEntity> query = session.createNamedQuery(
 					ExchangeRateEntity.QUERY_BY_CURRENCY_AND_DATE_SORTED_BY_RATE, ExchangeRateEntity.class);

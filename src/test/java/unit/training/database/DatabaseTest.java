@@ -1,4 +1,4 @@
-package training.database;
+package unit.training.database;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -16,9 +16,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import training.database.Database;
+import training.database.UnitOfWork;
 import training.exchange_rate.exception.unchecked.BadRequestException;
 
-public class DatabaseTestSuite {
+public class DatabaseTest {
 
 	@Mock
 	private SessionFactory sessionFactoryMock;

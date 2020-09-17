@@ -1,4 +1,4 @@
-package training.exchange_rate.downloader.http.converter.json;
+package unit.training.exchange_rate.downloader.http.converter.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -10,12 +10,13 @@ import org.junit.Test;
 
 import training.enums.Currency;
 import training.exchange_rate.downloader.http.converter.Converter;
+import training.exchange_rate.downloader.http.converter.json.JsonConverter;
 import training.exchange_rate.dto.ExchangeRate;
 import training.exchange_rate.exception.unchecked.ConvertResponseException;
 import training.exchange_rate.exception.unchecked.DataParseException;
 import training.exchange_rate.exception.unchecked.ResponseSyntaxException;
 
-public class JsonCurrencyConverterTestSuite {
+public class JsonCurrencyConverterTest {
 
 	private final LocalDate testDate = LocalDate.of(1, 1, 1);
 	private final Currency testCurrency = Currency.EURO;

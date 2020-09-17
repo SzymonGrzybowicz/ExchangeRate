@@ -1,4 +1,4 @@
-package training.exchange_rate.downloader.http;
+package unit.training.exchange_rate.downloader.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -27,6 +27,7 @@ import com.squareup.okhttp.ResponseBody;
 
 import training.enums.Currency;
 import training.exchange_rate.downloader.NbpDownloader;
+import training.exchange_rate.downloader.http.HttpNbpDownloader;
 import training.exchange_rate.downloader.http.converter.Converter;
 import training.exchange_rate.downloader.http.converter.Converter.DataFormat;
 import training.exchange_rate.exception.checked.NotFoundException;
@@ -34,7 +35,7 @@ import training.exchange_rate.exception.unchecked.BadRequestException;
 import training.exchange_rate.exception.unchecked.ConnectionException;
 import training.exchange_rate.exception.unchecked.DataFormatException;
 
-public class HttpNbpDownloaderTestSuite {
+public class HttpNbpDownloaderTest {
 
 	@Mock
 	private Converter converterMock;

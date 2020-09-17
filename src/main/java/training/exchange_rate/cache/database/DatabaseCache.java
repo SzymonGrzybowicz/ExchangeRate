@@ -2,12 +2,15 @@ package training.exchange_rate.cache.database;
 
 import java.time.LocalDate;
 
+import org.springframework.stereotype.Component;
+
 import training.enums.Currency;
 import training.exchange_rate.cache.Cache;
 import training.exchange_rate.dto.ExchangeRate;
 import training.exchange_rate.exception.unchecked.BadRequestException;
 import training.exchange_rate.repository.ExchangeRateRepository;
 
+@Component
 public class DatabaseCache implements Cache {
 
 	public DatabaseCache(ExchangeRateRepository repository) {

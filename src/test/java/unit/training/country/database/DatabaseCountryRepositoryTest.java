@@ -1,4 +1,4 @@
-package training.country.database;
+package unit.training.country.database;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -23,6 +23,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import training.country.CountryRepository;
+import training.country.database.DatabaseCountryRepository;
 import training.country.database.entity.CountryEntity;
 import training.country.database.mapper.CountryMapper;
 import training.country.dto.Country;
@@ -34,7 +35,7 @@ import training.exchange_rate.exception.checked.NotFoundException;
 import training.exchange_rate.exception.unchecked.BadRequestException;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class DatabaseCountryRepositoryTestSuite {
+public class DatabaseCountryRepositoryTest {
 
 	@Mock
 	private Session sessionMock;
