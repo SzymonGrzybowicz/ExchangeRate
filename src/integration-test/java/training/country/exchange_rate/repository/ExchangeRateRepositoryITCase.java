@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +15,6 @@ import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBuilder;
 
 import training.database.Database;
-import training.database.UnitOfWork;
 import training.enums.Currency;
 import training.exchange_rate.database.entity.ExchangeRateEntity;
 import training.exchange_rate.database.mapper.ExchangeRateEntityMapper;
@@ -34,10 +32,9 @@ public class ExchangeRateRepositoryITCase {
 		ExchangeRateEntityMapper mapper = new ExchangeRateEntityMapper();
 		repository = new ExchangeRateRepository(database, mapper);
 
-		UnitOfWork<List<ExchangeRateEntity>> readUnitOfWork = (Session session) -> {
+		List<ExchangeRateEntity> startValues = database.execute((session) -> {
 			return session.createQuery("from ExchangeRateEntity", ExchangeRateEntity.class).getResultList();
-		};
-		List<ExchangeRateEntity> startValues = database.execute(readUnitOfWork);
+		});
 
 		assertThat(startValues).isEmpty();
 	}
@@ -52,10 +49,9 @@ public class ExchangeRateRepositoryITCase {
 
 		// When
 		repository.save(exchangeRate);
-		UnitOfWork<ExchangeRateEntity> readUnitOfWork = (Session session) -> {
+		ExchangeRateEntity result = database.execute((session) -> {
 			return session.createQuery("from ExchangeRateEntity", ExchangeRateEntity.class).uniqueResult();
-		};
-		ExchangeRateEntity result = database.execute(readUnitOfWork);
+		});
 
 		// Then
 		assertThat(result.getCurrency()).isEqualTo(expectedCurrency);
@@ -71,11 +67,10 @@ public class ExchangeRateRepositoryITCase {
 		BigDecimal expectedRate = new BigDecimal("1234.1234");
 		ExchangeRateEntity entity = new ExchangeRateEntity(expectedRate, expectedDate, expectedCurrency);
 
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(entity);
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		ExchangeRate result = repository.get(expectedCurrency, expectedDate);
@@ -94,19 +89,17 @@ public class ExchangeRateRepositoryITCase {
 		BigDecimal rate = new BigDecimal("1234.1234");
 		ExchangeRateEntity entity = new ExchangeRateEntity(rate, date, currency);
 
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(entity);
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		repository.delete(new ExchangeRate(date, currency, rate));
 
-		UnitOfWork<ExchangeRateEntity> readUnitOfWork = (Session session) -> {
+		ExchangeRateEntity result = database.execute((session) -> {
 			return session.createQuery("from ExchangeRateEntity", ExchangeRateEntity.class).uniqueResult();
-		};
-		ExchangeRateEntity result = database.execute(readUnitOfWork);
+		});
 
 		// Then
 		assertThat(result).isNull();
@@ -120,20 +113,18 @@ public class ExchangeRateRepositoryITCase {
 		BigDecimal startRate = new BigDecimal("1111.1111");
 		ExchangeRateEntity entity = new ExchangeRateEntity(startRate, expectedDate, expectedCurrency);
 
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(entity);
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		BigDecimal expectedRate = new BigDecimal("1234.1234");
 		repository.update(new ExchangeRate(expectedDate, expectedCurrency, expectedRate));
 
-		UnitOfWork<ExchangeRateEntity> readUnitOfWork = (Session session) -> {
+		ExchangeRateEntity result = database.execute((session) -> {
 			return session.createQuery("from ExchangeRateEntity", ExchangeRateEntity.class).uniqueResult();
-		};
-		ExchangeRateEntity result = database.execute(readUnitOfWork);
+		});
 
 		// Then
 		assertThat(result.getCurrency()).isEqualTo(expectedCurrency);
@@ -150,7 +141,7 @@ public class ExchangeRateRepositoryITCase {
 		Currency expectedCurrency = Currency.EURO;
 		BigDecimal maxRate = new BigDecimal("1111.1111");
 
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(new ExchangeRateEntity(maxRate, expectedDate, expectedCurrency));
 			session.save(new ExchangeRateEntity(maxRate.subtract(BigDecimal.ONE), startDate, expectedCurrency));
 			session.save(new ExchangeRateEntity(maxRate.subtract(new BigDecimal(2)), startDate.plusDays(2),
@@ -160,8 +151,7 @@ public class ExchangeRateRepositoryITCase {
 			session.save(
 					new ExchangeRateEntity(maxRate.add(new BigDecimal(1)), startDate.minusDays(2), expectedCurrency));
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		ExchangeRate result = repository.getMaximumRateInPeriod(expectedCurrency, startDate, endDate);
@@ -181,7 +171,7 @@ public class ExchangeRateRepositoryITCase {
 		Currency expectedCurrency = Currency.EURO;
 		BigDecimal minRate = new BigDecimal("1111.1111");
 
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(new ExchangeRateEntity(minRate, expectedDate, expectedCurrency));
 			session.save(new ExchangeRateEntity(minRate.add(BigDecimal.ONE), startDate, expectedCurrency));
 			session.save(
@@ -191,8 +181,7 @@ public class ExchangeRateRepositoryITCase {
 			session.save(new ExchangeRateEntity(minRate.subtract(new BigDecimal(1)), startDate.minusDays(2),
 					expectedCurrency));
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		ExchangeRate result = repository.getMinimumRateInPeriod(expectedCurrency, startDate, endDate);
@@ -212,7 +201,7 @@ public class ExchangeRateRepositoryITCase {
 		BigDecimal minRate = new BigDecimal("1.0");
 		BigDecimal maxRate = new BigDecimal("1000.0");
 
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(new ExchangeRateEntity(minRate, startDate, expectedCurrency));
 			session.save(new ExchangeRateEntity(maxRate, endDate, expectedCurrency));
 
@@ -223,8 +212,7 @@ public class ExchangeRateRepositoryITCase {
 					Currency.POUND_STERLING));
 			session.save(new ExchangeRateEntity(maxRate.add(BigDecimal.ONE), endDate, Currency.POUND_STERLING));
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		Currency result = repository.getCurrencyWithHighestExchangeRateDifferenceInPeriod(startDate, endDate);
@@ -240,7 +228,7 @@ public class ExchangeRateRepositoryITCase {
 		Currency currency = Currency.EURO;
 		LocalDate date = LocalDate.now();
 
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 
 			session.save(new ExchangeRateEntity(maxRate, date, currency));
 			session.save(new ExchangeRateEntity(maxRate.subtract(new BigDecimal(1)), date.plusDays(1), currency));
@@ -256,9 +244,7 @@ public class ExchangeRateRepositoryITCase {
 			session.save(new ExchangeRateEntity(maxRate.subtract(new BigDecimal(9)), date.minusDays(2), currency));
 			session.save(new ExchangeRateEntity(maxRate.subtract(new BigDecimal(10)), date.minusDays(3), currency));
 			return null;
-		};
-
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		List<ExchangeRate> result = repository.getFiveMaximumExchangeRate(currency);
@@ -276,7 +262,7 @@ public class ExchangeRateRepositoryITCase {
 		Currency currency = Currency.EURO;
 		LocalDate date = LocalDate.now();
 
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 
 			session.save(new ExchangeRateEntity(minRate, date, currency));
 			session.save(new ExchangeRateEntity(minRate.add(new BigDecimal(1)), date.plusDays(1), currency));
@@ -292,9 +278,7 @@ public class ExchangeRateRepositoryITCase {
 			session.save(new ExchangeRateEntity(minRate.add(new BigDecimal(9)), date.minusDays(2), currency));
 			session.save(new ExchangeRateEntity(minRate.add(new BigDecimal(10)), date.minusDays(3), currency));
 			return null;
-		};
-
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		List<ExchangeRate> result = repository.getFiveMinimumExchangeRate(currency);

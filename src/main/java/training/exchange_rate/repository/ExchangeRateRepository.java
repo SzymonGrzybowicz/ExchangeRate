@@ -10,7 +10,6 @@ import org.hibernate.query.Query;
 import org.springframework.stereotype.Component;
 
 import training.database.Database;
-import training.database.UnitOfWork;
 import training.enums.Currency;
 import training.exchange_rate.database.entity.ExchangeRateEntity;
 import training.exchange_rate.database.mapper.ExchangeRateEntityMapper;
@@ -25,13 +24,12 @@ public class ExchangeRateRepository {
 	private ExchangeRateEntityMapper mapper;
 
 	public ExchangeRateRepository(Database database, ExchangeRateEntityMapper mapper) {
-		super();
 		this.database = database;
 		this.mapper = mapper;
 	}
 
 	public void save(ExchangeRate exchangeRate) {
-		UnitOfWork<Void> unitOfWork = (Session session) -> {
+		database.execute((session) -> {
 
 			read(exchangeRate.getCurrency(), exchangeRate.getDate(), session).ifPresent(e -> {
 				throw new BadRequestException(
@@ -40,24 +38,20 @@ public class ExchangeRateRepository {
 
 			session.save(mapper.map(exchangeRate));
 			return null;
-		};
-
-		database.execute(unitOfWork);
+		});
 	}
 
 	public ExchangeRate get(Currency currency, LocalDate date) {
-		UnitOfWork<ExchangeRateEntity> unitOfWork = (Session session) -> {
+		ExchangeRateEntity result = database.execute((session) -> {
 
 			return read(currency, date, session).orElseThrow(() -> new NotFoundException(
 					"Cannot find data for currency: " + currency + " and date: " + date + " in database"));
-		};
-
-		ExchangeRateEntity result = database.execute(unitOfWork);
+		});
 		return mapper.map(result);
 	}
 
 	public void delete(ExchangeRate exchangeRate) {
-		UnitOfWork<Void> unitOfWork = (Session session) -> {
+		database.execute((session) -> {
 
 			ExchangeRateEntity entity = read(exchangeRate.getCurrency(), exchangeRate.getDate(), session)
 					.orElseThrow(() -> new NotFoundException("Cannot delete for currency: " + exchangeRate.getCurrency()
@@ -65,13 +59,11 @@ public class ExchangeRateRepository {
 
 			session.delete(entity);
 			return null;
-		};
-
-		database.execute(unitOfWork);
+		});
 	}
 
 	public void update(ExchangeRate exchangeRate) {
-		UnitOfWork<Void> unitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			ExchangeRateEntity entity = read(exchangeRate.getCurrency(), exchangeRate.getDate(), session)
 					.orElseThrow(() -> new BadRequestException(
 							"Cannot update in database, not found data for that currency and date. If you want save use save() method."));
@@ -79,13 +71,11 @@ public class ExchangeRateRepository {
 			entity.setRate(exchangeRate.getRate());
 			session.update(entity);
 			return null;
-		};
-
-		database.execute(unitOfWork);
+		});
 	}
 
 	public ExchangeRate getMaximumRateInPeriod(Currency currency, LocalDate startDate, LocalDate endDate) {
-		UnitOfWork<ExchangeRateEntity> unitOfWork = (Session session) -> {
+		ExchangeRateEntity entity = database.execute((session) -> {
 			Query<ExchangeRateEntity> query = session.createNamedQuery(
 					ExchangeRateEntity.QUERY_BY_CURRENCY_AND_DATE_SORTED_BY_RATE_DESC, ExchangeRateEntity.class);
 			query.setParameter(ExchangeRateEntity.PARAMETER_CURRENCY, currency);
@@ -96,14 +86,12 @@ public class ExchangeRateRepository {
 			return query.uniqueResultOptional().orElseThrow(
 					() -> new NotFoundException("Cannot find data for currency: " + currency + " in period from: "
 							+ startDate + " to: " + endDate + " in database. Make sure peroid is correct."));
-		};
-
-		ExchangeRateEntity entity = database.execute(unitOfWork);
+		});
 		return mapper.map(entity);
 	}
 
 	public ExchangeRate getMinimumRateInPeriod(Currency currency, LocalDate startDate, LocalDate endDate) {
-		UnitOfWork<ExchangeRateEntity> unitOfWork = (Session session) -> {
+		ExchangeRateEntity entity = database.execute((session) -> {
 			Query<ExchangeRateEntity> query = session.createNamedQuery(
 					ExchangeRateEntity.QUERY_BY_CURRENCY_AND_DATE_SORTED_BY_RATE, ExchangeRateEntity.class);
 			query.setParameter(ExchangeRateEntity.PARAMETER_CURRENCY, currency);
@@ -114,14 +102,12 @@ public class ExchangeRateRepository {
 			return query.uniqueResultOptional().orElseThrow(
 					() -> new NotFoundException("Cannot find data for currency: " + currency + " in period from: "
 							+ startDate + " to: " + endDate + " in database. Make sure peroid is correct."));
-		};
-
-		ExchangeRateEntity entity = database.execute(unitOfWork);
+		});
 		return mapper.map(entity);
 	}
 
 	public Currency getCurrencyWithHighestExchangeRateDifferenceInPeriod(LocalDate startDate, LocalDate endDate) {
-		UnitOfWork<Currency> unitOfWork = (Session session) -> {
+		return database.execute((session) -> {
 			Query<Currency> query = session.createNamedQuery(
 					ExchangeRateEntity.QUERY_CURRENCIES_BY_PERIOD_SORTED_BY_HIGHEST_RATE_DIFFERENCE_DESC,
 					Currency.class);
@@ -131,36 +117,30 @@ public class ExchangeRateRepository {
 
 			return query.uniqueResultOptional().orElseThrow(
 					() -> new NotFoundException("Cannot find data for period from: " + startDate + " to: " + endDate));
-		};
-
-		return database.execute(unitOfWork);
+		});
 	}
 
 	public List<ExchangeRate> getFiveMaximumExchangeRate(Currency currency) {
-		UnitOfWork<List<ExchangeRateEntity>> unitOfWork = (Session session) -> {
+		List<ExchangeRateEntity> result = database.execute((session) -> {
 			Query<ExchangeRateEntity> query = session.createNamedQuery(
 					ExchangeRateEntity.QUERY_BY_CURRENCY_SORTED_BY_RATE_DESC, ExchangeRateEntity.class);
 			query.setParameter(ExchangeRateEntity.PARAMETER_CURRENCY, currency);
 			query.setMaxResults(5);
 
 			return query.getResultList();
-		};
-
-		List<ExchangeRateEntity> result = database.execute(unitOfWork);
+		});
 		return result.stream().map(mapper::map).collect(Collectors.toList());
 	}
 
 	public List<ExchangeRate> getFiveMinimumExchangeRate(Currency currency) {
-		UnitOfWork<List<ExchangeRateEntity>> unitOfWork = (Session session) -> {
+		List<ExchangeRateEntity> result = database.execute((session) -> {
 			Query<ExchangeRateEntity> query = session
 					.createNamedQuery(ExchangeRateEntity.QUERY_BY_CURRENCY_SORTED_BY_RATE, ExchangeRateEntity.class);
 			query.setParameter(ExchangeRateEntity.PARAMETER_CURRENCY, currency);
 			query.setMaxResults(5);
 
 			return query.getResultList();
-		};
-
-		List<ExchangeRateEntity> result = database.execute(unitOfWork);
+		});
 		return result.stream().map(mapper::map).collect(Collectors.toList());
 	}
 

@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.assertj.core.util.Sets;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +18,6 @@ import training.country.database.entity.CountryEntity;
 import training.country.database.mapper.CountryMapper;
 import training.country.dto.Country;
 import training.database.Database;
-import training.database.UnitOfWork;
 import training.enums.CountryName;
 import training.enums.Currency;
 
@@ -33,6 +31,12 @@ public class DatabaseCountryRepositoryITCase {
 		database = prepareDatabase();
 		CountryMapper mapper = new CountryMapper();
 		repository = new DatabaseCountryRepository(mapper, database);
+
+		List<CountryEntity> startValues = database.execute((session) -> {
+			return session.createQuery("from CountryEntity", CountryEntity.class).getResultList();
+		});
+
+		assertThat(startValues).isEmpty();
 	}
 
 	@Test
@@ -41,13 +45,12 @@ public class DatabaseCountryRepositoryITCase {
 		CountryName expectedName = CountryName.DEUTSCHLAND;
 		Set<Currency> expectedCurrencies = Sets.newLinkedHashSet(Currency.AMERICAN_DOLAR, Currency.EURO);
 		repository.save(new Country(expectedName, expectedCurrencies));
-		UnitOfWork<CountryEntity> unitOfWork = (Session session) -> {
-			return session.createQuery("FROM CountryEntity e INNER JOIN FETCH e.currencies", CountryEntity.class)
-					.uniqueResult();
-		};
 
 		// When
-		CountryEntity result = database.execute(unitOfWork);
+		CountryEntity result = database.execute((session) -> {
+			return session.createQuery("FROM CountryEntity e INNER JOIN FETCH e.currencies", CountryEntity.class)
+					.uniqueResult();
+		});
 
 		// Then
 		assertThat(result.getName()).isEqualTo(expectedName);
@@ -59,11 +62,10 @@ public class DatabaseCountryRepositoryITCase {
 		// Given
 		CountryName expectedName = CountryName.DEUTSCHLAND;
 		Set<Currency> expectedCurrencies = Sets.newLinkedHashSet(Currency.AMERICAN_DOLAR, Currency.EURO);
-		UnitOfWork<Void> unitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(new CountryEntity(expectedName, expectedCurrencies));
 			return null;
-		};
-		database.execute(unitOfWork);
+		});
 
 		// When
 		Country result = repository.get(expectedName);
@@ -79,19 +81,17 @@ public class DatabaseCountryRepositoryITCase {
 		CountryName expectedName = CountryName.DEUTSCHLAND;
 		Set<Currency> currencies = Sets.newLinkedHashSet(Currency.AMERICAN_DOLAR, Currency.EURO);
 		Currency expectedCurrency = Currency.POUND_STERLING;
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(new CountryEntity(expectedName, currencies));
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		repository.addCurrency(expectedName, expectedCurrency);
-		UnitOfWork<CountryEntity> readUnitOfWork = (Session session) -> {
+		CountryEntity result = database.execute((session) -> {
 			return session.createQuery("FROM CountryEntity e INNER JOIN FETCH e.currencies", CountryEntity.class)
 					.uniqueResult();
-		};
-		CountryEntity result = database.execute(readUnitOfWork);
+		});
 
 		// Then
 		assertThat(result.getName()).isEqualTo(expectedName);
@@ -105,19 +105,17 @@ public class DatabaseCountryRepositoryITCase {
 		CountryName expectedName = CountryName.DEUTSCHLAND;
 		Currency notExpectedCurrency = Currency.AMERICAN_DOLAR;
 		Set<Currency> currencies = Sets.newLinkedHashSet(notExpectedCurrency, Currency.EURO);
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(new CountryEntity(expectedName, currencies));
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		repository.removeCurrency(expectedName, notExpectedCurrency);
-		UnitOfWork<CountryEntity> readUnitOfWork = (Session session) -> {
+		CountryEntity result = database.execute((session) -> {
 			return session.createQuery("FROM CountryEntity e INNER JOIN FETCH e.currencies", CountryEntity.class)
 					.uniqueResult();
-		};
-		CountryEntity result = database.execute(readUnitOfWork);
+		});
 
 		// Then
 		assertThat(result.getName()).isEqualTo(expectedName);
@@ -130,18 +128,16 @@ public class DatabaseCountryRepositoryITCase {
 		// Given
 		CountryName countryName = CountryName.DEUTSCHLAND;
 		Set<Currency> currencies = Sets.newLinkedHashSet(Currency.EURO);
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(new CountryEntity(countryName, currencies));
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		repository.delete(countryName);
-		UnitOfWork<CountryEntity> readUnitOfWork = (Session session) -> {
+		CountryEntity result = database.execute((session) -> {
 			return session.createQuery("FROM CountryEntity", CountryEntity.class).uniqueResult();
-		};
-		CountryEntity result = database.execute(readUnitOfWork);
+		});
 
 		// Then
 		assertThat(result).isNull();
@@ -153,11 +149,10 @@ public class DatabaseCountryRepositoryITCase {
 		CountryName expectedName = CountryName.DEUTSCHLAND;
 		Set<Currency> currencies = Sets.newLinkedHashSet(Currency.AMERICAN_DOLAR, Currency.EURO,
 				Currency.POUND_STERLING);
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(new CountryEntity(expectedName, currencies));
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		List<Country> result = repository.getCountriesHasMoreThanOneCurrency();
@@ -173,13 +168,12 @@ public class DatabaseCountryRepositoryITCase {
 		// Given
 		Set<Currency> currencies = Sets.newLinkedHashSet(Currency.AMERICAN_DOLAR, Currency.EURO,
 				Currency.POUND_STERLING);
-		UnitOfWork<Void> saveUnitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			session.save(new CountryEntity(CountryName.DEUTSCHLAND, currencies));
 			session.save(new CountryEntity(CountryName.UNITED_STATES, currencies));
 			session.save(new CountryEntity(CountryName.WAKANDA, Sets.newHashSet()));
 			return null;
-		};
-		database.execute(saveUnitOfWork);
+		});
 
 		// When
 		List<Country> result = repository.getCountriesHasMoreThanOneCurrency();

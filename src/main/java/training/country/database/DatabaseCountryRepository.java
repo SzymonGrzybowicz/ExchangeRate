@@ -12,7 +12,6 @@ import training.country.database.entity.CountryEntity;
 import training.country.database.mapper.CountryMapper;
 import training.country.dto.Country;
 import training.database.Database;
-import training.database.UnitOfWork;
 import training.enums.CountryName;
 import training.enums.Currency;
 import training.exchange_rate.exception.checked.NotFoundException;
@@ -30,19 +29,16 @@ public class DatabaseCountryRepository implements CountryRepository {
 
 	@Override
 	public Country get(CountryName countryName) {
-		UnitOfWork<CountryEntity> unitOfWork = (Session session) -> {
-
+		CountryEntity entity = database.execute((session) -> {
 			return read(countryName, session).orElseThrow(
 					() -> new NotFoundException("Cannot find data for country name: " + countryName + " in database"));
-		};
-
-		CountryEntity entity = database.execute(unitOfWork);
+		});
 		return mapper.map(entity);
 	}
 
 	@Override
 	public void save(Country country) {
-		UnitOfWork<Void> unitOfWork = (Session session) -> {
+		database.execute((session) -> {
 
 			read(country.getName(), session).ifPresent(c -> {
 				throw new BadRequestException(
@@ -51,14 +47,12 @@ public class DatabaseCountryRepository implements CountryRepository {
 
 			session.save(mapper.map(country));
 			return null;
-		};
-
-		database.execute(unitOfWork);
+		});
 	}
 
 	@Override
 	public void addCurrency(CountryName countryName, Currency currency) {
-		UnitOfWork<Void> unitOfWork = (Session session) -> {
+		database.execute((session) -> {
 
 			CountryEntity entity = read(countryName, session)
 					.orElseThrow(() -> new NotFoundException("Cannot add currency: " + currency
@@ -72,14 +66,12 @@ public class DatabaseCountryRepository implements CountryRepository {
 			entity.addCurrency(currency);
 			session.update(entity);
 			return null;
-		};
-
-		database.execute(unitOfWork);
+		});
 	}
 
 	@Override
 	public void removeCurrency(CountryName countryName, Currency currency) {
-		UnitOfWork<Void> unitOfWork = (Session session) -> {
+		database.execute((session) -> {
 			CountryEntity entity = read(countryName, session)
 					.orElseThrow(() -> new NotFoundException("Cannot remove currency: " + currency
 							+ "from country with name: " + countryName + " cannot find country."));
@@ -92,36 +84,28 @@ public class DatabaseCountryRepository implements CountryRepository {
 			entity.removeCurrency(currency);
 			session.update(entity);
 			return null;
-		};
-
-		database.execute(unitOfWork);
+		});
 	}
 
 	@Override
 	public void delete(CountryName countryName) {
-
-		UnitOfWork<Void> unitOfWork = (Session session) -> {
-
+		database.execute((session) -> {
 			CountryEntity entity = read(countryName, session).orElseThrow(() -> new NotFoundException(
 					"Cannot remove country with name: " + countryName + " cannot find country."));
 
 			session.remove(entity);
 			return null;
-		};
-
-		database.execute(unitOfWork);
+		});
 	}
 
 	@Override
 	public List<Country> getCountriesHasMoreThanOneCurrency() {
-		UnitOfWork<List<CountryEntity>> unitOfWork = (Session session) -> {
+		List<CountryEntity> result = database.execute((session) -> {
 			Query<CountryEntity> query = session.createNamedQuery(CountryEntity.QUERY_WHERE_HAS_MORE_THAN_TWO_CURRENCY,
 					CountryEntity.class);
 
 			return query.getResultList();
-		};
-
-		List<CountryEntity> result = database.execute(unitOfWork);
+		});
 		return result.stream().map(mapper::map).collect(Collectors.toList());
 	}
 
