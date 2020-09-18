@@ -103,4 +103,37 @@ public class ExchangeRateEntity implements Serializable {
 		return "ExchangeRateEntity [id=" + id + ", rate=" + rate + ", date=" + date + ", currency=" + currency + "]";
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((currency == null) ? 0 : currency.hashCode());
+		result = prime * result + ((date == null) ? 0 : date.hashCode());
+		result = prime * result + ((rate == null) ? 0 : rate.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ExchangeRateEntity other = (ExchangeRateEntity) obj;
+		if (currency != other.currency)
+			return false;
+		if (date == null) {
+			if (other.date != null)
+				return false;
+		} else if (!date.equals(other.date))
+			return false;
+		if (rate == null) {
+			if (other.rate != null)
+				return false;
+		} else if (!rate.equals(other.rate))
+			return false;
+		return true;
+	}
 }
