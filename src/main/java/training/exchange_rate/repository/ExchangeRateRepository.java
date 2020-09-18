@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 import org.hibernate.query.Query;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import training.database.Database;
 import training.enums.Currency;
@@ -17,7 +17,7 @@ import training.exchange_rate.dto.ExchangeRate;
 import training.exchange_rate.exception.checked.NotFoundException;
 import training.exchange_rate.exception.unchecked.BadRequestException;
 
-@Component
+@Repository
 public class ExchangeRateRepository {
 
 	private Database database;

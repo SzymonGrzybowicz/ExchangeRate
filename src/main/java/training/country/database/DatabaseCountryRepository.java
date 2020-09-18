@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.springframework.stereotype.Repository;
 
 import training.country.CountryRepository;
 import training.country.database.entity.CountryEntity;
@@ -17,6 +18,7 @@ import training.enums.Currency;
 import training.exchange_rate.exception.checked.NotFoundException;
 import training.exchange_rate.exception.unchecked.BadRequestException;
 
+@Repository
 public class DatabaseCountryRepository implements CountryRepository {
 
 	private CountryMapper mapper;
